@@ -1,0 +1,109 @@
+'use client';
+import { useState } from 'react';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { COMPANY_NAME } from '../../Globals';
+import authService from '../../services/auth.service';
+import { Alert, showAlert } from '../../components/common';
+import { extractErrorMessage } from '../../utils/formatters';
+
+interface ForgotPasswordFormData {
+  login_id: string;
+}
+
+const ForgotPassword = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotPasswordFormData>();
+
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    setIsLoading(true);
+
+    try {
+      const response = await authService.passwordRecovery({
+        login_id: data.login_id,
+      });
+
+      if (response.success) {
+        setSubmitted(true);
+      } else {
+        setErrorMessage(response.message || 'Password recovery failed. Please try again.');
+        showAlert('error-alert');
+      }
+    } catch (err: any) {
+      setErrorMessage(extractErrorMessage(err, 'An error occurred. Please try again.'));
+      showAlert('error-alert');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="xui-max-w-[360px] xui-w-fluid-100 xui-mx-auto">
+      <img
+        src="/ndc-logo2.jpeg"
+        alt="NDC"
+        style={{ width: '80px', height: 'auto' }}
+      />
+      <div className="xui-mt-2 xui-md-mt-4">
+        <h1 className="xui-font-sz-[28px]">Forgot Password</h1>
+        <p className="xui-font-sz-[14px] xui-mt-1">
+          <span className="xui-opacity-4">Remember your account?</span>{' '}
+          <Link href="/login" className="xui-font-w-700" style={{ color: 'var(--primary-600)' }}>
+            Back to sign in
+          </Link>
+        </p>
+
+        {submitted ? (
+          <div
+            className="xui-p-1 xui-bdr-rad-half xui-mt-1"
+            style={{ backgroundColor: 'var(--success-light)', color: 'var(--success)' }}
+          >
+            <p className="xui-font-sz-85">
+              A new password has been sent to your registered email address.
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit(onSubmit)} className="xui-form xui-mt-1">
+            <div className="xui-form-box">
+              <label htmlFor="login_id">Username / Email / Phone</label>
+              <input
+                type="text"
+                id="login_id"
+                {...register('login_id', { required: 'Username, email or phone is required' })}
+              />
+              {errors.login_id && (
+                <span className="xui-font-sz-80 xui-text-red">{errors.login_id.message}</span>
+              )}
+            </div>
+
+            <div className="xui-form-box">
+              <button
+                type="submit"
+                className="xui-btn xui-btn-block xui-bdr-rad-[8px] xui-font-sz-[13px] xui-py-[16px]"
+                style={{ backgroundColor: 'var(--primary-600)', color: '#fff' }}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Submitting...' : 'Submit'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        <p className="xui-text-center xui-font-sz-80 xui-mt-2 xui-opacity-4">
+          {COMPANY_NAME} &bull; v1.0
+        </p>
+      </div>
+
+      <Alert id="error-alert" type="error" title="Error" message={errorMessage} />
+    </div>
+  );
+};
+
+export default ForgotPassword;
