@@ -1,5 +1,5 @@
 ﻿'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import QuillEditor from '@/components/QuillEditor';
@@ -7,6 +7,8 @@ import { Navbar } from '../../components/layout';
 import { ArrowLeft } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import eventsService from '../../services/events.service';
+import candidatesService from '../../services/candidates.service';
+import type { Candidate } from '../../services/candidates.service';
 import { Alert, showAlert, ImageUpload } from '../../components/common';
 import { extractErrorMessage, sanitizeHTML } from '../../utils/formatters';
 
@@ -14,7 +16,7 @@ const buildLink = (value: string, prefix: string): string => {
   return value.startsWith(prefix) ? value : `${prefix}${value}`;
 };
 
-interface FormData { title: string; alt_text: string; type: string; start_date: string; start_time: string; end_date: string; end_time: string; location: string; link: string; }
+interface FormData { candidate_unique_id: string; title: string; alt_text: string; type: string; start_date: string; start_time: string; end_date: string; end_time: string; location: string; link: string; }
 
 const AddEvent = () => {
   const router = useRouter();
@@ -26,12 +28,19 @@ const AddEvent = () => {
   const [image, setImage] = useState('');
   const [imagePublicId, setImagePublicId] = useState('');
   const [description, setDescription] = useState('');
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
 
   const accessIds = getAccessIds('candidate-portal', 'events');
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    defaultValues: { title: '', alt_text: '', type: '', start_date: searchParams.get('date') || '', start_time: '', end_date: '', end_time: '', location: '', link: '' }
+    defaultValues: { candidate_unique_id: '', title: '', alt_text: '', type: '', start_date: searchParams.get('date') || '', start_time: '', end_date: '', end_time: '', location: '', link: '' }
   });
+
+  useEffect(() => {
+    candidatesService.publicGetAll({ size: 200 }).then(res => {
+      if (res.success && res.data) setCandidates(Array.isArray(res.data) ? res.data : (res.data as any).rows || []);
+    }).catch(() => {});
+  }, []);
 
   const onSubmit = async (data: FormData) => {
     if (!accessIds) { setError('You do not have access to this module'); showAlert('error-alert'); return; }
@@ -42,6 +51,7 @@ const AddEvent = () => {
     try {
       const response = await eventsService.add(
         {
+          candidate_unique_id: data.candidate_unique_id,
           title: data.title, alt_text: data.alt_text, type: data.type, description: cleanDescription,
           start_date: data.start_date, start_time: data.start_time,
           ...(data.end_date && { end_date: data.end_date }),
@@ -71,6 +81,14 @@ const AddEvent = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form">
           <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-2 xui-grid-gap-2">
             <div>
+              <div className="xui-form-box" {...(errors.candidate_unique_id && { 'xui-error': 'true' })}>
+                <label htmlFor="candidate_unique_id">Candidate *</label>
+                <select id="candidate_unique_id" {...register('candidate_unique_id', { required: 'Candidate is required' })}>
+                  <option value="">Select a candidate</option>
+                  {candidates.map(c => <option key={c.unique_id} value={c.unique_id}>{c.name}{(c as any).Position?.name ? ` (${(c as any).Position.name})` : c.state ? ` - ${c.state}` : ''}</option>)}
+                </select>
+                {errors.candidate_unique_id && <span className="message">{errors.candidate_unique_id.message}</span>}
+              </div>
               <div className="xui-form-box" {...(errors.title && { 'xui-error': 'true' })}>
                 <label htmlFor="title">Title *</label>
                 <input type="text" id="title" placeholder="Enter event title" {...register('title', { required: 'Title is required' })} />
