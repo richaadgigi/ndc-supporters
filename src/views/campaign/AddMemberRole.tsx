@@ -25,7 +25,7 @@ const AddMemberRole = () => {
     setLoading(true);
     try {
       const response = await memberRolesService.add({ name: data.name }, { module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id });
-      if (response.success) { setSuccessMessage('Member role added successfully'); showAlert('success-alert'); setTimeout(() => router.push('/dashboard/membership/member-roles'), 1500); }
+      if (response.success) { setSuccessMessage('Member role added successfully'); showAlert('success-alert'); setTimeout(() => router.push('/dashboard/campaign/member-roles'), 1500); }
       else { setError(response.message || 'Failed to add member role'); showAlert('error-alert'); }
     } catch (err: any) { setError(extractErrorMessage(err, 'Failed to add member role')); showAlert('error-alert'); } finally { setLoading(false); }
   };

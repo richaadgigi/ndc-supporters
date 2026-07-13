@@ -32,6 +32,7 @@ interface PaginationParams {
   sortBy?: 'ASC' | 'DESC';
   module_unique_id: string;
   sub_module_unique_id?: string;
+  tags?: string;
 }
 
 interface SearchParams extends PaginationParams { search: string; }

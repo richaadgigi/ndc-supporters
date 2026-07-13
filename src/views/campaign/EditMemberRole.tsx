@@ -44,7 +44,7 @@ const EditMemberRole = () => {
     setLoading(true); setError('');
     try {
       const response = await memberRolesService.editDetails({ unique_id: id, name: data.name }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
-      if (response.success) { setSuccessMessage('Member role updated successfully'); showAlert('success-alert'); setTimeout(() => router.push('/dashboard/membership/member-roles'), 1500); }
+      if (response.success) { setSuccessMessage('Member role updated successfully'); showAlert('success-alert'); setTimeout(() => router.push('/dashboard/campaign/member-roles'), 1500); }
       else { setError(response.message || 'Failed to update member role'); showAlert('error-alert'); }
     } catch (err: any) { setError(extractErrorMessage(err, 'Failed to update member role')); showAlert('error-alert'); } finally { setLoading(false); }
   };

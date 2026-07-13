@@ -149,6 +149,7 @@ const AllAnnouncements = () => {
                   <tr>
                     <th>Title</th>
                     <th>Candidate</th>
+                    <th>Status</th>
                     <th>Start Date</th>
                     <th>End Date</th>
                     <th>Created</th>
@@ -160,6 +161,11 @@ const AllAnnouncements = () => {
                     <tr key={item.unique_id}>
                       <td className="xui-font-w-500">{item.title}</td>
                       <td className="xui-font-sz-85 xui-opacity-6">{item.Candidate?.name || '-'}</td>
+                      <td>
+                        <span className={`xui-badge ${item.approved_by ? 'xui-badge-success' : 'xui-badge-warning'} xui-font-sz-70`}>
+                          {item.approved_by ? 'Approved' : 'Pending'}
+                        </span>
+                      </td>
                       <td className="xui-font-sz-85 xui-opacity-6">{item.start_date || '-'}</td>
                       <td className="xui-font-sz-85 xui-opacity-6">{item.end_date || '-'}</td>
                       <td className="xui-font-sz-85 xui-opacity-6">{new Date(item.createdAt).toLocaleDateString()}</td>

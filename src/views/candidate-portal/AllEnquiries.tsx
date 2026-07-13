@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '../../components/layout';
-import { Renew, TrashCan, View, OverflowMenuVertical, Checkmark, Add } from '@carbon/icons-react';
+import { Renew, TrashCan, View, OverflowMenuVertical, Checkmark } from '@carbon/icons-react';
 import { extractErrorMessage } from '../../utils/formatters';
 import { useGeneral } from '../../context/GeneralContext';
 import enquiriesService from '../../services/enquiries.service';
@@ -106,10 +106,7 @@ const AllEnquiries = () => {
             <FilterModal id="enquiries" fields={filterFields} values={filterValues} onApply={handleApplyFilters} onClear={handleClearFilters} />
           </div>
           <div className="xui-d-flex xui-flex-ai-center xui-grid-gap-half">
-            <button onClick={() => router.push('/dashboard/candidate-portal/enquiries/add')} className="xui-btn xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ backgroundColor: 'var(--primary-600)', color: 'var(--secondary-700)' }}>
-              <span className="icon-container"><Add size={16} /></span> Add Enquiry
-            </button>
-            <button onClick={handleRefresh} className="xui-btn xui-btn-text xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)' }} disabled={loading}>
+<button onClick={handleRefresh} className="xui-btn xui-btn-text xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)' }} disabled={loading}>
               <span className="icon-container"><Renew size={16} /></span> Refresh
             </button>
           </div>
@@ -186,3 +183,4 @@ const AllEnquiries = () => {
 };
 
 export default AllEnquiries;
+

@@ -1,5 +1,5 @@
 ﻿'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '../../components/layout';
 import { Renew, TrashCan, Add, Download, Time, UserAvatar } from '@carbon/icons-react';
@@ -17,7 +17,7 @@ const AllGallery = () => {
   const router = useRouter();
   const { getAccessIds, checkAccess } = useGeneral();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterValues, setFilterValues] = useState<FilterValues>({ start_date: '', end_date: '' });
+  const [filterValues, setFilterValues] = useState<FilterValues>({ start_date: '', end_date: '', tags: '' });
   const [items, setItems] = useState<Gallery[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
@@ -27,6 +27,7 @@ const AllGallery = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   const [selectedItem, setSelectedItem] = useState<Gallery | null>(null);
+  const tagRef = useRef('');
 
   const accessIds = getAccessIds('candidate-portal', 'gallery');
   const moduleId = accessIds?.module_unique_id;
@@ -46,7 +47,7 @@ const AllGallery = () => {
   const fetchItems = useCallback(async () => {
     if (!moduleId || !subModuleId) { setFetchError('You do not have access to this module'); setLoading(false); return; }
     setLoading(true); setFetchError('');
-    try { handleResponse(await galleryService.getAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
+    try { handleResponse(await galleryService.getAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch gallery')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
@@ -54,14 +55,14 @@ const AllGallery = () => {
     if (!moduleId || !subModuleId) return;
     if (!query.trim()) { fetchItems(); return; }
     setLoading(true); setFetchError('');
-    try { handleResponse(await galleryService.search({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
+    try { handleResponse(await galleryService.search({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to search gallery')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize, fetchItems]);
 
   const filterItems = useCallback(async (range: { start_date: string; end_date: string }) => {
     if (!moduleId || !subModuleId) return;
     setLoading(true); setFetchError('');
-    try { handleResponse(await galleryService.filter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
+    try { handleResponse(await galleryService.filter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to filter gallery')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
@@ -71,21 +72,24 @@ const AllGallery = () => {
   };
 
   const hasActiveFilters = Object.values(filterValues).some((v) => v !== '');
+  const allTags = Array.from(new Set(items.flatMap(item => item.tags || [])));
   const filterFields: FilterField[] = [
     { key: 'start_date', label: 'Start Date', type: 'date' as const },
     { key: 'end_date', label: 'End Date', type: 'date' as const },
+    { key: 'tags', label: 'Tag', type: 'select' as const, options: allTags.map(t => ({ value: t, label: t })) },
   ];
 
   const handlePageSizeChange = (newSize: number) => { setPageSize(newSize); setCurrentPage(1); };
-  const handleSearchChange = (value: string) => { setSearchQuery(value); setCurrentPage(1); if (value) setFilterValues({ start_date: '', end_date: '' }); };
+  const handleSearchChange = (value: string) => { setSearchQuery(value); setCurrentPage(1); if (value) setFilterValues({ start_date: '', end_date: '', tags: '' }); };
   const handleSearch = (value: string) => { if (value.trim()) searchItems(value); else fetchItems(); };
   const handleApplyFilters = (newValues: FilterValues) => {
+    tagRef.current = newValues.tags || '';
     setFilterValues(newValues); setSearchQuery(''); setCurrentPage(1);
     if (newValues.start_date && newValues.end_date) filterItems({ start_date: newValues.start_date, end_date: newValues.end_date });
     else fetchItems();
   };
-  const handleClearFilters = () => { setFilterValues({ start_date: '', end_date: '' }); setCurrentPage(1); fetchItems(); };
-  const handleRefresh = () => { setSearchQuery(''); setFilterValues({ start_date: '', end_date: '' }); setCurrentPage(1); fetchItems(); };
+  const handleClearFilters = () => { tagRef.current = ''; setFilterValues({ start_date: '', end_date: '', tags: '' }); setCurrentPage(1); fetchItems(); };
+  const handleRefresh = () => { tagRef.current = ''; setSearchQuery(''); setFilterValues({ start_date: '', end_date: '', tags: '' }); setCurrentPage(1); fetchItems(); };
   const handleDeleteSuccess = () => { if (selectedItem) setItems(prev => prev.filter(item => item.unique_id !== selectedItem.unique_id)); handleRefresh(); };
 
   useEffect(() => {

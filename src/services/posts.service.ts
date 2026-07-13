@@ -37,7 +37,7 @@ export interface PostResponse {
   data: Post | null;
 }
 
-interface PaginationParams { page?: number; size?: number; orderBy?: string; sortBy?: 'ASC' | 'DESC'; module_unique_id: string; sub_module_unique_id?: string; }
+interface PaginationParams { page?: number; size?: number; orderBy?: string; sortBy?: 'ASC' | 'DESC'; module_unique_id: string; sub_module_unique_id?: string; tags?: string; }
 interface SearchParams extends PaginationParams { search: string; }
 interface FilterParams extends PaginationParams { start_date: string; end_date: string; }
 

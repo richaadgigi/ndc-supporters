@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '../../components/layout';
-import { Renew, Add, Download, ChevronLeft, ChevronRight } from '@carbon/icons-react';
+import { Renew, Add, Download, ChevronLeft, ChevronRight, WarningAlt } from '@carbon/icons-react';
 import { extractErrorMessage } from '../../utils/formatters';
 import { useGeneral } from '../../context/GeneralContext';
 import eventsService from '../../services/events.service';
@@ -246,7 +246,8 @@ const AllEvents = () => {
                     </div>
 
                     {cellEvents.slice(0, MAX_CHIPS).map(ev => {
-                      const evColor = 'var(--primary-600)';
+                      const approved = ev.approved_by !== null && ev.approved_by !== undefined;
+                      const evColor = approved ? 'var(--primary-600)' : '#d97706';
                       const isStart = toDateOnly(ev.start_date) === key;
                       const isEnd = !ev.end_date || toDateOnly(ev.end_date) === key;
                       const isMultiDay = ev.end_date && toDateOnly(ev.end_date) !== toDateOnly(ev.start_date);
@@ -270,7 +271,7 @@ const AllEvents = () => {
                             opacity: isStart ? 1 : 0.75,
                           }}
                         >
-                          {isStart ? <>{ev.start_time && <>{formatTime12(ev.start_time)} </>}{ev.title}</> : '\u00A0'}
+                          {isStart ? <span style={{ display: 'flex', alignItems: 'center', gap: '3px', overflow: 'hidden' }}>{!approved && <WarningAlt size={10} style={{ flexShrink: 0 }} />}{ev.start_time && <>{formatTime12(ev.start_time)} </>}{ev.title}</span> : '\u00A0'}
                         </div>
                       );
                     })}

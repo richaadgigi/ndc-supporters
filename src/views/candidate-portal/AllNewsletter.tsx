@@ -117,6 +117,7 @@ const AllNewsletter = () => {
                 <thead>
                   <tr>
                     <th>Email</th>
+                    <th>Status</th>
                     <th>Created</th>
                     {canDelete && <th>Actions</th>}
                   </tr>
@@ -125,6 +126,11 @@ const AllNewsletter = () => {
                   {items.map((item) => (
                     <tr key={item.unique_id}>
                       <td className="xui-font-w-500">{item.email}</td>
+                      <td>
+                        <span className={`xui-badge ${item.active_subscription ? 'xui-badge-success' : 'xui-badge-danger'} xui-font-sz-70`}>
+                          {item.active_subscription ? 'Subscribed' : 'Unsubscribed'}
+                        </span>
+                      </td>
                       <td className="xui-font-sz-85 xui-opacity-6">{new Date(item.createdAt).toLocaleDateString()}</td>
                       {canDelete && (
                         <td>
