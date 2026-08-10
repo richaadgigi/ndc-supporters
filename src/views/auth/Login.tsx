@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { View, ViewOff, ArrowLeft } from '@carbon/icons-react';
 import { APP_NAME } from '../../Globals';
@@ -303,6 +304,9 @@ const Login = () => {
                   <input type="checkbox" {...register('remember_me')} className="xui-cursor-pointer" />
                   <span className="xui-opacity-6">Remember me</span>
                 </label>
+                <Link href="/forgot-password" className="xui-font-sz-[12px]" style={{ color: 'var(--primary-600)' }}>
+                  Forgot Password?
+                </Link>
               </div>
 
               <div className="xui-form-box">
