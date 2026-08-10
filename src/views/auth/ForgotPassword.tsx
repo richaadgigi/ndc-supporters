@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
-import { COMPANY_NAME } from '../../Globals';
 import authService from '../../services/auth.service';
 import { Alert, showAlert } from '../../components/common';
 import { extractErrorMessage } from '../../utils/formatters';
@@ -95,10 +94,6 @@ const ForgotPassword = () => {
             </div>
           </form>
         )}
-
-        <p className="xui-text-center xui-font-sz-80 xui-mt-2 xui-opacity-4">
-          {COMPANY_NAME} &bull; v1.0
-        </p>
       </div>
 
       <Alert id="error-alert" type="error" title="Error" message={errorMessage} />
