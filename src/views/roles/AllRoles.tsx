@@ -286,7 +286,7 @@ const AllRoles = () => {
                         <td>
                           <div className="xui-tooltip" xui-set="left">
                             <span className="xui-cursor-pointer xui-d-inline-flex"><OverflowMenuVertical size={20} /></span>
-                            <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex' }}>
+                            <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex', maxWidth: '500px' }}>
                               {canEdit && (
                                 <button
                                   onClick={() => router.push(`/dashboard/roles/edit/${role.unique_id}`)}

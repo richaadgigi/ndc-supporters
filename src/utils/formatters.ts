@@ -58,6 +58,15 @@ export const formatDateRange = (start: string | Date, end: string | Date): strin
   return `${startDate.format('MMM D, YYYY')} - ${endDate.format('MMM D, YYYY')}`;
 };
 
+export const toE164 = (phone: string | null | undefined): string => {
+  if (!phone) return '';
+  const trimmed = String(phone).replace(/\s+/g, '');
+  if (!trimmed) return '';
+  if (trimmed.startsWith('+')) return trimmed;
+  if (trimmed.startsWith('0')) return `+234${trimmed.slice(1)}`;
+  return `+${trimmed}`;
+};
+
 export const formatPhoneNumber = (phone: string): string => {
   const cleaned = phone.replace(/\D/g, '');
 

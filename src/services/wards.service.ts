@@ -20,7 +20,7 @@ const buildQueryParams = (params: Record<string, any>): string => {
 };
 
 const wardsService = {
-  publicGetAll: async (params?: { page?: number; size?: number }): Promise<WardsResponse> => {
+  publicGetAll: async (params?: { page?: number; size?: number; lga_unique_id?: string }): Promise<WardsResponse> => {
     const response = await altApi.get(`/wards?${buildQueryParams(params || {})}`);
     return response.data;
   },

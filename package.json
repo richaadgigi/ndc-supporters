@@ -1,10 +1,10 @@
 {
-  "name": "ndc-campaign-crm",
+  "name": "ndc-supporters",
   "private": true,
   "version": "0.0.0",
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "next dev -p 5001",
     "start": "NODE_ENV=production node server.js",
     "lint": "eslint"
   },

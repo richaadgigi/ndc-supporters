@@ -94,14 +94,14 @@ const EventDetailModal = ({ event, canEdit, canDelete, onApprove, onDelete }: Ev
           {event.status === 1 && (
             <button type="button" className="xui-btn xui-btn-block xui-bdr-rad-half xui-d-flex xui-flex-ai-center xui-flex-jc-center xui-grid-gap-half"
               style={{ backgroundColor: 'var(--neutral-100)', border: 'none' }}
-              onClick={() => { modalHide(MODAL_ID); router.push(`/dashboard/candidate-portal/events/view/${event.unique_id}`); }}>
+              onClick={() => { modalHide(MODAL_ID); router.push(`/dashboard/supporter-portal/events/view/${event.unique_id}`); }}>
               <View size={14} /> View Full Details
             </button>
           )}
           {canEdit && event.status !== 1 && (
             <button type="button" className="xui-btn xui-btn-block xui-bdr-rad-half xui-d-flex xui-flex-ai-center xui-flex-jc-center xui-grid-gap-half"
               style={{ backgroundColor: 'var(--info-light)', border: 'none', color: 'var(--info)' }}
-              onClick={() => { modalHide(MODAL_ID); router.push(`/dashboard/candidate-portal/events/edit/${event.unique_id}`); }}>
+              onClick={() => { modalHide(MODAL_ID); router.push(`/dashboard/supporter-portal/events/edit/${event.unique_id}`); }}>
               <Edit size={14} /> Edit
             </button>
           )}

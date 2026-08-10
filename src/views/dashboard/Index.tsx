@@ -10,31 +10,45 @@ import { useGeneral } from '../../context/GeneralContext';
 import analyticsService from '../../services/analytics.service';
 import type {
   AdministrationStats,
-  CampaignStats,
+  SupporterStats,
   ApprovalStats,
+  SupportGroupPortalStats,
 } from '../../services/analytics.service';
+import { OverviewSkeleton } from '../../components/skeletons';
+import { Bullhorn, Category, EventSchedule, Image as ImageIcon, Blog, Help } from '@carbon/icons-react';
 
 const CHART_COLORS = ['#3f4195', '#ed3337', '#3B82F6', '#F59E0B', '#6567AA', '#D42D30', '#32347B', '#8C8DBF'];
 
 const Dashboard = () => {
-  const { user, acls, getAccessIds } = useGeneral();
+  const { user, acls, getAccessIds, userType } = useGeneral();
   const [adminStats, setAdminStats] = useState<AdministrationStats | null>(null);
-  const [campaignStats, setCampaignStats] = useState<CampaignStats | null>(null);
+  const [supporterStats, setSupporterStats] = useState<SupporterStats | null>(null);
   const [approvalStats, setApprovalStats] = useState<ApprovalStats | null>(null);
+  const [portalStats, setPortalStats] = useState<SupportGroupPortalStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const userRole = acls[0]?.Role?.name || 'User';
   const generalModuleId = acls[0]?.module_unique_id;
 
   const adminIds = useMemo(() => getAccessIds('administration', 'administration-overview'), [acls]);
-  const campaignIds = useMemo(() => getAccessIds('campaign', 'campaign-overview'), [acls]);
+  const supporterIds = useMemo(() => getAccessIds('supporter', 'supporter-overview'), [acls]);
   const approvalIds = useMemo(() => getAccessIds('approvals', 'approvals-overview'), [acls]);
+  const portalIds = useMemo(() => getAccessIds('supporter-portal', 'supporter-portal-overview'), [acls]);
 
   useEffect(() => {
-    if (!generalModuleId) return;
+    if (!generalModuleId) { setLoading(false); return; }
 
     let cancelled = false;
 
     const promises = [];
+
+    if (userType === 'portal' && portalIds) {
+      promises.push(
+        analyticsService.getPortalSupportGroupPortalStats({ module_unique_id: portalIds.module_unique_id, sub_module_unique_id: portalIds.sub_module_unique_id })
+          .then(res => { if (!cancelled && res.success && res.data) setPortalStats(res.data); })
+          .catch(err => console.error('Failed to load portal stats:', err))
+      );
+    }
 
     if (adminIds) {
       promises.push(
@@ -44,10 +58,10 @@ const Dashboard = () => {
       );
     }
 
-    if (campaignIds) {
+    if (supporterIds) {
       promises.push(
-        analyticsService.getCampaignStats({ module_unique_id: campaignIds.module_unique_id, sub_module_unique_id: campaignIds.sub_module_unique_id })
-          .then(res => { if (!cancelled && res.success && res.data) setCampaignStats(res.data); })
+        analyticsService.getSupporterStats({ module_unique_id: supporterIds.module_unique_id, sub_module_unique_id: supporterIds.sub_module_unique_id })
+          .then(res => { if (!cancelled && res.success && res.data) setSupporterStats(res.data); })
           .catch(() => {})
       );
     }
@@ -60,8 +74,10 @@ const Dashboard = () => {
       );
     }
 
+    Promise.all(promises).finally(() => { if (!cancelled) setLoading(false); });
+
     return () => { cancelled = true; };
-  }, [generalModuleId, adminIds, campaignIds, approvalIds]);
+  }, [generalModuleId, adminIds, supporterIds, approvalIds, portalIds, userType]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -83,7 +99,7 @@ const Dashboard = () => {
               Welcome back, {user?.fullname?.split(' ')[0] || 'User'}
             </h2>
             <p style={{ fontSize: '14px', color: 'var(--neutral-500)', margin: '4px 0 0' }}>
-              Here's an overview of the campaign.
+              Here's an overview of the supporter network.
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -91,21 +107,37 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {loading && <OverviewSkeleton />}
+
+        {!loading && (
         <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-2 xui-lg-grid-col-4 xui-grid-gap-1 xui-mb-2">
+          {portalStats && (
+            <>
+              <MetricCard title="Announcements" value={portalStats.total_announcements} icon={<Bullhorn size={24} />} iconBgColor="var(--info-light)" iconColor="var(--info)" />
+              <MetricCard title="Events" value={portalStats.total_events} icon={<EventSchedule size={24} />} iconBgColor="var(--success-light)" iconColor="var(--success)" />
+              <MetricCard title="Posts" value={portalStats.total_posts} icon={<Blog size={24} />} iconBgColor="#fce7f3" iconColor="#ed3337" />
+              <MetricCard title="Gallery" value={portalStats.total_galleries} icon={<ImageIcon size={24} />} iconBgColor="var(--primary-100)" iconColor="var(--primary-700)" />
+              <MetricCard title="Categories" value={portalStats.total_categories} icon={<Category size={24} />} iconBgColor="var(--neutral-100)" iconColor="var(--neutral-600)" />
+              <MetricCard title="FAQs" value={portalStats.total_faqs} icon={<Help size={24} />} iconBgColor="#fff7ed" iconColor="#f59e0b" />
+              <MetricCard title="Members" value={portalStats.total_members} icon={<GroupPresentation size={24} />} iconBgColor="var(--success-light)" iconColor="var(--success)" />
+              <MetricCard title="Enquiries" value={portalStats.total_enquiries} icon={<UserMultiple size={24} />} iconBgColor="var(--warning-light)" iconColor="var(--warning)" />
+            </>
+          )}
           {adminStats && (
             <MetricCard title="Total Users" value={adminStats.total_users} icon={<UserMultiple size={24} />} iconBgColor="var(--primary-100)" iconColor="var(--primary-700)" />
           )}
-          {campaignStats && (
+          {supporterStats && (
             <>
-              <MetricCard title="Positions" value={campaignStats.total_positions} icon={<Trophy size={24} />} iconBgColor="var(--info-light)" iconColor="var(--info)" />
-              <MetricCard title="Candidates" value={campaignStats.total_candidates} icon={<Person size={24} />} iconBgColor="#fce7f3" iconColor="#ed3337" />
-              <MetricCard title="Campaign Members" value={campaignStats.total_members} icon={<GroupPresentation size={24} />} iconBgColor="var(--success-light)" iconColor="var(--success)" />
+              <MetricCard title="Support Group Types" value={supporterStats.total_support_group_types} icon={<Trophy size={24} />} iconBgColor="var(--info-light)" iconColor="var(--info)" />
+              <MetricCard title="Support Groups" value={supporterStats.total_support_groups} icon={<Person size={24} />} iconBgColor="#fce7f3" iconColor="#ed3337" />
+              <MetricCard title="Members" value={supporterStats.total_members} icon={<GroupPresentation size={24} />} iconBgColor="var(--success-light)" iconColor="var(--success)" />
             </>
           )}
           {approvalStats && (
             <MetricCard title="Total Approvals" value={approvalStats.total_approvals} icon={<Checkmark size={24} />} iconBgColor="var(--warning-light)" iconColor="var(--warning)" />
           )}
         </div>
+        )}
 
         <div className="xui-mb-2">
           <QuickActions />
@@ -137,23 +169,23 @@ const Dashboard = () => {
             </div>
           )}
 
-          {campaignStats && (campaignStats.total_candidates_via_positions ?? []).length > 0 && (
+          {supporterStats && (supporterStats.total_support_groups_via_support_group_types ?? []).length > 0 && (
             <div className="xui-bg-white xui-bdr-rad-half xui-overflow-hidden" style={{ border: '1px solid var(--neutral-200)' }}>
               <div className="xui-py-1 xui-px-1-half" style={{ borderBottom: '1px solid var(--neutral-100)' }}>
                 <h3 className="xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ fontSize: '14px', fontWeight: 600, color: 'var(--neutral-800)', margin: 0 }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', display: 'inline-block', flexShrink: 0, background: '#ed3337' }} />
-                  Candidates by Position
+                  Support Groups by Type
                 </h3>
               </div>
               <div className="xui-py-1 xui-px-1-half">
                 <Chart
                   type="bar"
                   height={260}
-                  series={[{ name: 'Candidates', data: (campaignStats.total_candidates_via_positions ?? []).map((i) => i.total_count) }]}
+                  series={[{ name: 'Support Groups', data: (supporterStats.total_support_groups_via_support_group_types ?? []).map((i) => i.total_count) }]}
                   options={{
                     chart: { toolbar: { show: false } },
                     xaxis: {
-                      categories: (campaignStats.total_candidates_via_positions ?? []).map((i) => i.Position?.name || 'Unknown'),
+                      categories: (supporterStats.total_support_groups_via_support_group_types ?? []).map((i) => i.SupportGroupType?.title || i.SupportGroupType?.name || 'Unknown'),
                       labels: { style: { fontSize: '11px', colors: 'var(--neutral-400)' }, rotate: -45 },
                     },
                     yaxis: { labels: { style: { fontSize: '11px', colors: 'var(--neutral-400)' } } },

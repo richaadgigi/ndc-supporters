@@ -5,8 +5,8 @@ import QuillEditor from '@/components/QuillEditor';
 import { Close } from '@carbon/icons-react';
 import { modalHide } from '@richaadgigi/stylexui';
 import eventsService from '../../services/events.service';
-import candidatesService from '../../services/candidates.service';
-import type { Candidate } from '../../services/candidates.service';
+import supportGroupsService from '../../services/supportGroups.service';
+import type { SupportGroup } from '../../services/supportGroups.service';
 import { showAlert } from '../common';
 import { extractErrorMessage, sanitizeHTML } from '../../utils/formatters';
 
@@ -15,7 +15,7 @@ const buildLink = (value: string, prefix: string): string => {
 };
 
 interface AddEventFormData {
-  candidate_unique_id: string;
+  support_group_unique_id: string;
   title: string;
   alt_text: string;
   type: string;
@@ -40,7 +40,7 @@ const MODAL_ID = 'add-event-modal';
 const AddEventModal = ({ date, accessIds, onSuccess, setError, setSuccessMessage }: AddEventModalProps) => {
   const [saving, setSaving] = useState(false);
   const [description, setDescription] = useState('');
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [supportGroups, setSupportGroups] = useState<SupportGroup[]>([]);
 
   const {
     register,
@@ -49,24 +49,25 @@ const AddEventModal = ({ date, accessIds, onSuccess, setError, setSuccessMessage
     formState: { errors },
   } = useForm<AddEventFormData>({
     defaultValues: {
-      candidate_unique_id: '', title: '', alt_text: '', type: 'Physical',
+      support_group_unique_id: '', title: '', alt_text: '', type: 'Physical',
       start_date: date, start_time: '09:00', end_date: '', end_time: '',
       location: '', link: '',
     },
   });
 
   useEffect(() => {
-    candidatesService.publicGetAll({ size: 200 }).then(res => {
+    if (!accessIds) return;
+    supportGroupsService.getAll({ size: 200, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id }).then(res => {
       if (res.success && res.data) {
-        setCandidates(Array.isArray(res.data) ? res.data : (res.data as any).rows || []);
+        setSupportGroups(Array.isArray(res.data) ? res.data : (res.data as any).rows || []);
       }
     }).catch(() => {});
-  }, []);
+  }, [accessIds?.module_unique_id]);
 
   useEffect(() => {
     if (date) {
       reset({
-        candidate_unique_id: '', title: '', alt_text: '', type: 'Physical',
+        support_group_unique_id: '', title: '', alt_text: '', type: 'Physical',
         start_date: date, start_time: '09:00', end_date: '', end_time: '',
         location: '', link: '',
       });
@@ -106,7 +107,7 @@ const AddEventModal = ({ date, accessIds, onSuccess, setError, setSuccessMessage
     try {
       const res = await eventsService.add(
         {
-          candidate_unique_id: data.candidate_unique_id,
+          support_group_unique_id: data.support_group_unique_id,
           title: data.title.trim(),
           alt_text: data.alt_text.trim(),
           type: data.type,
@@ -154,17 +155,17 @@ const AddEventModal = ({ date, accessIds, onSuccess, setError, setSuccessMessage
         </div>
         <hr className="xui-my-1" />
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form">
-          <div className="xui-form-box" {...(errors.candidate_unique_id && { 'xui-error': 'true' })}>
-            <label htmlFor="event_candidate">Candidate *</label>
-            <select id="event_candidate" {...register('candidate_unique_id', { required: 'Candidate is required' })}>
-              <option value="">Select a candidate</option>
-              {candidates.map(c => (
-                <option key={c.unique_id} value={c.unique_id}>
-                  {c.name}{(c as any).Position?.name ? ` (${(c as any).Position.name})` : c.state ? ` - ${c.state}` : ''}
+          <div className="xui-form-box" {...(errors.support_group_unique_id && { 'xui-error': 'true' })}>
+            <label htmlFor="event_support_group">Support Group *</label>
+            <select id="event_support_group" {...register('support_group_unique_id', { required: 'Support group is required' })}>
+              <option value="">Select a support group</option>
+              {supportGroups.map(g => (
+                <option key={g.unique_id} value={g.unique_id}>
+                  {g.name}{g.scope_option ? ` (${g.scope_option})` : ''}{g.state ? ` - ${g.state}` : ''}
                 </option>
               ))}
             </select>
-            {errors.candidate_unique_id && <span className="message">{errors.candidate_unique_id.message}</span>}
+            {errors.support_group_unique_id && <span className="message">{errors.support_group_unique_id.message}</span>}
           </div>
 
           <div className="xui-d-grid xui-grid-col-2 xui-grid-gap-1">

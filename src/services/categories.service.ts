@@ -2,16 +2,21 @@ import api from './api';
 
 export interface Category {
   unique_id: string;
-  candidate_unique_id: string;
+  support_group_unique_id: string;
+  zone: string | null;
+  state: string | null;
+  lga: string | null;
+  ward: string | null;
+  constituency: string | null;
   name: string;
   stripped: string;
-  created_by: string;
+  created_by: string | null;
   approved_by: string | null;
   status: number;
   createdAt: string;
   updatedAt: string;
-  Candidate?: { unique_id: string; name: string; stripped: string; state?: string; image?: string | null };
-  Creator?: { unique_id: string; firstname: string; middlename?: string; lastname: string; username: string; Role?: { name: string } };
+  SupportGroup?: { unique_id: string; name: string; stripped: string } | null;
+  Creator?: { unique_id: string; firstname: string; lastname: string; Role?: { name: string } } | null;
   Approver?: { unique_id: string; firstname: string; lastname: string } | null;
 }
 
@@ -27,97 +32,99 @@ export interface CategoryResponse {
   data: Category | null;
 }
 
-interface PaginationParams {
-  page?: number;
-  size?: number;
-  orderBy?: string;
-  sortBy?: 'ASC' | 'DESC';
-  module_unique_id: string;
-  sub_module_unique_id?: string;
-  candidate_unique_id?: string;
-}
-
-interface SearchParams extends PaginationParams {
-  search: string;
-}
-
-interface FilterParams extends PaginationParams {
-  start_date: string;
-  end_date: string;
-}
+interface PaginationParams { page?: number; size?: number; orderBy?: string; sortBy?: 'ASC' | 'DESC'; module_unique_id: string; sub_module_unique_id?: string; }
+interface SearchParams extends PaginationParams { search: string; }
+interface FilterParams extends PaginationParams { start_date: string; end_date: string; }
 
 const buildQueryParams = (params: Record<string, any>): string => {
-  const queryParams = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      queryParams.append(key, String(value));
-    }
-  });
-  return queryParams.toString();
+  const qp = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') qp.append(k, String(v)); });
+  return qp.toString();
 };
 
 const categoriesService = {
-  publicGetAll: async (params?: { page?: number; size?: number }): Promise<CategoriesResponse> => {
+  publicGetAll: async (params?: Record<string, any>): Promise<CategoriesResponse> => {
     const response = await api.get(`/categories?${buildQueryParams(params || {})}`);
     return response.data;
   },
-  getCategories: async (params: PaginationParams): Promise<CategoriesResponse> => {
-    const query = buildQueryParams(params);
-    const response = await api.get(`/user/categories?${query}`);
+
+  getAll: async (params: PaginationParams): Promise<CategoriesResponse> => {
+    const response = await api.get(`/user/categories?${buildQueryParams(params)}`);
     return response.data;
   },
 
-  getCategory: async (unique_id: string, params: { module_unique_id: string; sub_module_unique_id?: string }): Promise<CategoryResponse> => {
-    const query = buildQueryParams({ unique_id, ...params });
-    const response = await api.get(`/user/category?${query}`);
+  getOne: async (unique_id: string, params: Omit<PaginationParams, 'page' | 'size'>): Promise<CategoryResponse> => {
+    const response = await api.get(`/user/category?${buildQueryParams({ unique_id, ...params })}`);
     return response.data;
   },
 
-  searchCategories: async (params: SearchParams): Promise<CategoriesResponse> => {
-    const query = buildQueryParams(params);
-    const response = await api.get(`/user/search/categories?${query}`);
+  search: async (params: SearchParams): Promise<CategoriesResponse> => {
+    const response = await api.get(`/user/search/categories?${buildQueryParams(params)}`);
     return response.data;
   },
 
-  filterCategories: async (params: FilterParams): Promise<CategoriesResponse> => {
-    const query = buildQueryParams(params);
-    const response = await api.get(`/user/filter/categories?${query}`);
+  filter: async (params: FilterParams): Promise<CategoriesResponse> => {
+    const response = await api.get(`/user/filter/categories?${buildQueryParams(params)}`);
     return response.data;
   },
 
-  addCategory: async (
-    data: { name: string; candidate_unique_id: string },
-    params: { module_unique_id: string; sub_module_unique_id?: string }
-  ): Promise<{ success: boolean; message: string }> => {
-    const query = buildQueryParams(params);
-    const response = await api.post(`/user/category/add?${query}`, data);
+  add: async (data: Record<string, any>, params: Omit<PaginationParams, 'page' | 'size'>): Promise<CategoryResponse> => {
+    const response = await api.post(`/user/category/add?${buildQueryParams(params)}`, data);
     return response.data;
   },
 
-  editDetails: async (
-    data: { unique_id: string; name: string },
-    params: { module_unique_id: string; sub_module_unique_id?: string }
-  ): Promise<{ success: boolean; message: string }> => {
-    const query = buildQueryParams(params);
-    const response = await api.put(`/user/category/edit/details?${query}`, data);
+  editDetails: async (data: Record<string, any>, params: Omit<PaginationParams, 'page' | 'size'>): Promise<CategoryResponse> => {
+    const response = await api.put(`/user/category/edit/details?${buildQueryParams(params)}`, data);
     return response.data;
   },
 
-  approveCategory: async (
-    data: { unique_id: string },
-    params: { module_unique_id: string; sub_module_unique_id?: string }
-  ): Promise<{ success: boolean; message: string }> => {
-    const query = buildQueryParams(params);
-    const response = await api.put(`/user/approve/category?${query}`, data);
+  approve: async (data: { unique_id: string }, params: Omit<PaginationParams, 'page' | 'size'>): Promise<{ success: boolean; message: string }> => {
+    const response = await api.put(`/user/approve/category?${buildQueryParams(params)}`, data);
     return response.data;
   },
 
-  deleteCategory: async (
-    unique_id: string,
-    params: { module_unique_id: string; sub_module_unique_id?: string }
-  ): Promise<{ success: boolean; message: string }> => {
-    const query = buildQueryParams(params);
-    const response = await api.delete(`/user/category?${query}`, { data: { unique_id } });
+  remove: async (unique_id: string, params: Omit<PaginationParams, 'page' | 'size'>): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete(`/user/category?${buildQueryParams(params)}`, { data: { unique_id } });
+    return response.data;
+  },
+
+  portalGetAll: async (params: PaginationParams): Promise<CategoriesResponse> => {
+    const response = await api.get(`/portal/categories?${buildQueryParams(params)}`);
+    return response.data;
+  },
+
+  portalGetOne: async (unique_id: string, params: Omit<PaginationParams, 'page' | 'size'>): Promise<CategoryResponse> => {
+    const response = await api.get(`/portal/category?${buildQueryParams({ unique_id, ...params })}`);
+    return response.data;
+  },
+
+  portalSearch: async (params: SearchParams): Promise<CategoriesResponse> => {
+    const response = await api.get(`/portal/search/categories?${buildQueryParams(params)}`);
+    return response.data;
+  },
+
+  portalFilter: async (params: FilterParams): Promise<CategoriesResponse> => {
+    const response = await api.get(`/portal/filter/categories?${buildQueryParams(params)}`);
+    return response.data;
+  },
+
+  portalAdd: async (data: Record<string, any>, params: Omit<PaginationParams, 'page' | 'size'>): Promise<CategoryResponse> => {
+    const response = await api.post(`/portal/category/add?${buildQueryParams(params)}`, data);
+    return response.data;
+  },
+
+  portalEditDetails: async (data: Record<string, any>, params: Omit<PaginationParams, 'page' | 'size'>): Promise<CategoryResponse> => {
+    const response = await api.put(`/portal/category/edit/details?${buildQueryParams(params)}`, data);
+    return response.data;
+  },
+
+  portalApprove: async (data: { unique_id: string }, params: Omit<PaginationParams, 'page' | 'size'>): Promise<{ success: boolean; message: string }> => {
+    const response = await api.put(`/portal/approve/category?${buildQueryParams(params)}`, data);
+    return response.data;
+  },
+
+  portalRemove: async (unique_id: string, params: Omit<PaginationParams, 'page' | 'size'>): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete(`/portal/category?${buildQueryParams(params)}`, { data: { unique_id } });
     return response.data;
   },
 };

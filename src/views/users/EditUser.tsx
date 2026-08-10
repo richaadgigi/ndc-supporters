@@ -7,7 +7,7 @@ import { ArrowLeft, Renew, Checkmark, Subtract, CloseOutline, UserRole } from '@
 import { useGeneral } from '../../context/GeneralContext';
 import usersService from '../../services/users.service';
 import type { User, RoleOption } from '../../services/users.service';
-import { Alert, showAlert } from '../../components/common';
+import { Alert, showAlert, ErrorState } from '../../components/common';
 import { extractErrorMessage } from '../../utils/formatters';
 import { ConfirmModal } from '../../components/modals';
 import { modalShow } from '@richaadgigi/stylexui';
@@ -220,17 +220,7 @@ const EditUser = () => {
         {loading ? (
           <UserDetailSkeleton />
         ) : fetchError ? (
-          <div className="xui-py-3 xui-text-center">
-            <p className="xui-opacity-6 xui-mb-1">{fetchError}</p>
-            <button
-              onClick={fetchUser}
-              className="xui-btn xui-btn-text xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-inline-flex xui-flex-ai-center xui-grid-gap-half"
-              style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)' }}
-            >
-              <span className="icon-container"><Renew size={16} /></span>
-              Retry
-            </button>
-          </div>
+          <ErrorState message={fetchError} onRetry={fetchUser} />
         ) : user ? (
           <>
             <div className="xui-bg-white xui-bdr-rad-half xui-overflow-hidden xui-mb-1-half" style={{ border: '1px solid var(--neutral-200)' }}>

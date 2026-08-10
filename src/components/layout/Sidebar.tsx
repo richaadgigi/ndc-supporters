@@ -1,4 +1,4 @@
-'use client';
+ 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { APP_SHORT_NAME } from '../../Globals';
@@ -23,15 +23,13 @@ import {
   Help,
   FolderOpen,
   Category,
-  GroupPresentation,
   Image,
   Notebook,
-  Notification,
-  Certificate,
-  Person,
-  Trophy,
   Email,
   Bullhorn,
+  Group,
+  GroupPresentation,
+  Person,
 } from '@carbon/icons-react';
 import { useState, useMemo, useEffect } from 'react';
 import { useGeneral } from '../../context/GeneralContext';
@@ -55,8 +53,8 @@ interface SidebarProps {
 }
 
 const moduleIcons: Record<string, React.ReactNode> = {
-  'campaign': <GroupPresentation size={20} />,
-  'candidate-portal': <Person size={20} />,
+  'supporter-portal': <GroupPresentation size={20} />,
+  'supporter': <Group size={20} />,
   'roles': <UserAdmin size={20} />,
   'acls': <Security size={20} />,
   'approvals': <Checkmark size={20} />,
@@ -65,14 +63,8 @@ const moduleIcons: Record<string, React.ReactNode> = {
 };
 
 const subModuleIcons: Record<string, React.ReactNode> = {
-  'overview': <Dashboard size={16} />,
-  'positions': <Trophy size={16} />,
-  'candidates': <Person size={16} />,
-  'members': <UserMultiple size={16} />,
-  'member-roles': <UserAdmin size={16} />,
-  'member-role-acls': <Security size={16} />,
-
-  'candidate-profile': <Person size={16} />,
+  'supporter-portal-overview': <Dashboard size={16} />,
+  'support-group-profile': <Person size={16} />,
   'announcements': <Bullhorn size={16} />,
   'categories': <Category size={16} />,
   'enquiries': <Help size={16} />,
@@ -80,9 +72,16 @@ const subModuleIcons: Record<string, React.ReactNode> = {
   'faqs': <Help size={16} />,
   'file-storage': <FolderOpen size={16} />,
   'gallery': <Image size={16} />,
-  'manifestos': <Document size={16} />,
+  'members': <UserMultiple size={16} />,
   'newsletter': <Email size={16} />,
   'posts': <Blog size={16} />,
+
+  'supporter-overview': <Dashboard size={16} />,
+  'support-group-types': <Notebook size={16} />,
+  'support-groups': <Group size={16} />,
+  'support-group-members': <UserMultiple size={16} />,
+  'member-roles': <UserAdmin size={16} />,
+  'member-role-acls': <Security size={16} />,
 
   'all-roles': <UserAdmin size={16} />,
   'roles-overview': <Dashboard size={16} />,
@@ -93,20 +92,13 @@ const subModuleIcons: Record<string, React.ReactNode> = {
   'approvals-overview': <Dashboard size={16} />,
   'all-logs': <Report size={16} />,
   'logs-overview': <Dashboard size={16} />,
-
-  'campaign-overview': <Dashboard size={16} />,
-  'candidate-portal-overview': <Dashboard size={16} />,
   'administration-overview': <Dashboard size={16} />,
-
   'users': <UserMultiple size={16} />,
-  'ward-notices': <Notebook size={16} />,
-  'state-announcements': <Notification size={16} />,
-  'national-circulars': <Certificate size={16} />,
 };
 
 const modulePaths: Record<string, string> = {
-  'campaign': '/dashboard/campaign',
-  'candidate-portal': '/dashboard/candidate-portal',
+  'supporter-portal': '/dashboard/supporter-portal',
+  'supporter': '/dashboard/supporter',
   'roles': '/dashboard/roles',
   'acls': '/dashboard/acls',
   'approvals': '/dashboard/approvals',
@@ -115,14 +107,8 @@ const modulePaths: Record<string, string> = {
 };
 
 const subModulePaths: Record<string, string> = {
-  'overview': '/overview',
-  'positions': '/positions',
-  'candidates': '/candidates',
-  'members': '/members',
-  'member-roles': '/member-roles',
-  'member-role-acls': '/member-role-acls',
-
-  'candidate-profile': '/candidate-profile',
+  'supporter-portal-overview': '/overview',
+  'support-group-profile': '/profile',
   'announcements': '/announcements',
   'categories': '/categories',
   'enquiries': '/enquiries',
@@ -130,9 +116,16 @@ const subModulePaths: Record<string, string> = {
   'faqs': '/faqs',
   'file-storage': '/file-storage',
   'gallery': '/gallery',
-  'manifestos': '/manifestos',
+  'members': '/members',
   'newsletter': '/newsletter',
   'posts': '/posts',
+
+  'supporter-overview': '/overview',
+  'support-group-types': '/support-group-types',
+  'support-groups': '/support-groups',
+  'support-group-members': '/support-group-members',
+  'member-roles': '/member-roles',
+  'member-role-acls': '/member-role-acls',
 
   'all-roles': '',
   'roles-overview': '/overview',
@@ -143,17 +136,13 @@ const subModulePaths: Record<string, string> = {
   'approvals-overview': '/overview',
   'all-logs': '',
   'logs-overview': '/overview',
-
-  'campaign-overview': '/overview',
-  'candidate-portal-overview': '/overview',
   'administration-overview': '/overview',
-
   'users': '/users',
 };
 
 const moduleGroups: Record<string, string> = {
-  'campaign': 'Operations',
-  'candidate-portal': 'Operations',
+  'supporter-portal': 'Support Group',
+  'supporter': 'Administration',
   'roles': 'Administration',
   'acls': 'Administration',
   'approvals': 'Administration',
@@ -161,9 +150,16 @@ const moduleGroups: Record<string, string> = {
   'administration': 'Administration',
 };
 
+const PUBLIC_MEMBER_ITEMS: NavItem[] = [
+  { label: 'Announcements', path: '/dashboard/announcements', icon: <Bullhorn size={20} /> },
+  { label: 'Events', path: '/dashboard/events', icon: <EventSchedule size={20} /> },
+  { label: 'Gallery', path: '/dashboard/gallery', icon: <Image size={20} /> },
+  { label: 'Posts', path: '/dashboard/posts', icon: <Blog size={20} /> },
+];
+
 const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
-  const { acls } = useGeneral();
+  const { acls, isPortalUser, userType } = useGeneral();
   const pathname = usePathname();
 
   const toggleExpand = (label: string) => {
@@ -175,73 +171,80 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
 
   const navGroups = useMemo(() => {
     const groups: Record<string, NavItem[]> = {
-      'Overview': [
-        {
-          label: 'Dashboard',
-          path: '/dashboard',
-          icon: <Dashboard size={20} />,
-        },
-      ],
-      'Operations': [],
+      'Overview': [{ label: 'Dashboard', path: '/dashboard', icon: <Dashboard size={20} /> }],
+      'My Group': [],
+      'Support Group': [],
       'Administration': [],
     };
 
-    const aclsByModule: Record<string, { moduleName: string; moduleStripped: string; subModules: { name: string; stripped: string }[] }> = {};
+    if (!isPortalUser) {
+      groups['My Group'] = PUBLIC_MEMBER_ITEMS;
+    } else {
+      const aclsByModule: Record<string, { moduleName: string; moduleStripped: string; subModules: { name: string; stripped: string }[] }> = {};
 
-    acls.forEach((acl) => {
-      const moduleStripped = acl.Module?.stripped;
-      const moduleName = acl.Module?.name;
-      const subModuleStripped = acl.SubModule?.stripped;
-      const subModuleName = acl.SubModule?.name;
+      acls.forEach((acl) => {
+        const moduleStripped = acl.Module?.stripped;
+        const moduleName = acl.Module?.name;
+        const subModuleStripped = acl.SubModule?.stripped;
+        const subModuleName = acl.SubModule?.name;
 
-      if (moduleStripped && moduleName) {
-        if (!aclsByModule[moduleStripped]) {
-          aclsByModule[moduleStripped] = { moduleName, moduleStripped, subModules: [] };
-        }
-        if (subModuleStripped && subModuleName) {
-          const exists = aclsByModule[moduleStripped].subModules.some(s => s.stripped === subModuleStripped);
-          if (!exists) {
-            aclsByModule[moduleStripped].subModules.push({ name: subModuleName, stripped: subModuleStripped });
+        if (moduleStripped && moduleName) {
+          if (!aclsByModule[moduleStripped]) {
+            aclsByModule[moduleStripped] = { moduleName, moduleStripped, subModules: [] };
+          }
+          if (subModuleStripped && subModuleName) {
+            const exists = aclsByModule[moduleStripped].subModules.some(s => s.stripped === subModuleStripped);
+            if (!exists) {
+              aclsByModule[moduleStripped].subModules.push({ name: subModuleName, stripped: subModuleStripped });
+            }
           }
         }
-      }
-    });
-
-    Object.values(aclsByModule).forEach((module) => {
-      const groupName = moduleGroups[module.moduleStripped] || 'Operations';
-      const basePath = modulePaths[module.moduleStripped] || `/dashboard/${module.moduleStripped}`;
-      const moduleIcon = moduleIcons[module.moduleStripped] || <Folder size={20} />;
-
-      const children: NavItem[] = module.subModules.map((subModule) => {
-        const subPath = subModulePaths[subModule.stripped] ?? `/${subModule.stripped}`;
-        const subIcon = subModuleIcons[subModule.stripped] || <Document size={16} />;
-        return {
-          label: subModule.name,
-          path: `${basePath}${subPath}`,
-          icon: subIcon,
-          end: subPath === '',
-        };
       });
 
-      if (children.length > 0) {
-        groups[groupName].push({
-          label: module.moduleName,
-          path: basePath,
-          icon: moduleIcon,
-          children,
+      Object.values(aclsByModule).forEach((module) => {
+        const groupName = moduleGroups[module.moduleStripped] || 'Support Group';
+
+        if (userType === 'admin' && groupName === 'Support Group') return;
+        if (userType === 'portal' && groupName === 'Administration') return;
+
+        const basePath = modulePaths[module.moduleStripped] || `/dashboard/${module.moduleStripped}`;
+        const moduleIcon = moduleIcons[module.moduleStripped] || <Folder size={20} />;
+
+        const children: NavItem[] = module.subModules.map((subModule) => {
+          const subPath = subModulePaths[subModule.stripped] ?? `/${subModule.stripped}`;
+          const subIcon = subModuleIcons[subModule.stripped] || <Document size={16} />;
+          return {
+            label: subModule.name,
+            path: `${basePath}${subPath}`,
+            icon: subIcon,
+            end: subPath === '',
+          };
         });
-      }
-    });
+
+        if (children.length > 0) {
+          groups[groupName].push({
+            label: module.moduleName,
+            path: basePath,
+            icon: moduleIcon,
+            children,
+          });
+        }
+      });
+    }
 
     const result: NavGroup[] = [];
-    ['Overview', 'Operations', 'Administration'].forEach((groupLabel) => {
-      if (groups[groupLabel].length > 0) {
+    const groupOrder = isPortalUser
+      ? ['Overview', 'Support Group', 'Administration']
+      : ['Overview', 'My Group'];
+
+    groupOrder.forEach((groupLabel) => {
+      if (groups[groupLabel]?.length > 0) {
         result.push({ label: groupLabel, items: groups[groupLabel] });
       }
     });
 
     return result;
-  }, [acls]);
+  }, [acls, isPortalUser, userType]);
 
   useEffect(() => {
     const activeLabels: string[] = [];

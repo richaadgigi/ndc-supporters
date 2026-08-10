@@ -1,7 +1,7 @@
 
-export const APP_NAME = 'NDC Campaign';
-export const APP_SHORT_NAME = 'NDC Campaign CRM';
-export const COMPANY_NAME = 'NDC Campaign';
+export const APP_NAME = 'NDC Supporters';
+export const APP_SHORT_NAME = 'NDC Supporters';
+export const COMPANY_NAME = 'NDC Supporters';
 export const COMPANY_LOCATION = '';
 
 export const DEFAULT_PAGE_SIZE = 20;

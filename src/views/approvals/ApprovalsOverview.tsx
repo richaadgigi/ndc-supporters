@@ -2,6 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Chart from 'react-apexcharts';
 import { Navbar } from '../../components/layout';
+import { EmptyState, ErrorState } from '../../components/common';
+import { OverviewSkeleton } from '../../components/skeletons';
 import { MetricCard } from '../../components/overview';
 import { Renew, Checkmark, AppConnectivity, Catalog, DataTable } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
@@ -64,22 +66,12 @@ const ApprovalsOverview = () => {
 
       <div className="xui-py-1-half">
         {loading ? (
-          <div className="xui-py-3 xui-text-center">
-            <p>Loading approval analytics...</p>
-          </div>
+          <OverviewSkeleton />
         ) : error ? (
-          <div className="xui-py-3 xui-text-center">
-            <p className="xui-opacity-6 xui-mb-1">{error}</p>
-            <button
-              onClick={fetchStats}
-              className="xui-btn xui-btn-text xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-inline-flex xui-flex-ai-center xui-grid-gap-half"
-              style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)' }}
-            >
-              <span className="icon-container"><Renew size={16} /></span>
-              Retry
-            </button>
-          </div>
-        ) : stats ? (
+          <ErrorState title="Failed to load approval analytics" message={error} onRetry={fetchStats} />
+        ) : !stats ? (
+          <EmptyState title="No data available" message="There is nothing to display yet." />
+        ) : (
           <>
             <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-2 xui-lg-grid-col-4 xui-grid-gap-1 xui-mb-1-half">
               <MetricCard
@@ -191,7 +183,7 @@ const ApprovalsOverview = () => {
               </div>
             </div>
           </>
-        ) : null}
+        )}
       </div>
     </div>
   );

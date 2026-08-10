@@ -83,7 +83,7 @@ const DayEventsModal = ({ date, events, canAdd, canEdit, canDelete, todayKey, on
                 <div className="xui-d-flex xui-grid-gap-half" style={{ paddingLeft: '18px', marginTop: '8px' }}>
                   {canEdit && (
                     <button type="button"
-                      onClick={(e) => { e.stopPropagation(); modalHide(MODAL_ID); router.push(`/dashboard/candidate-portal/events/edit/${ev.unique_id}`); }}
+                      onClick={(e) => { e.stopPropagation(); modalHide(MODAL_ID); router.push(`/dashboard/supporter-portal/events/edit/${ev.unique_id}`); }}
                       className="xui-d-flex xui-flex-ai-center xui-grid-gap-half xui-cursor-pointer"
                       style={{ padding: '4px 10px', backgroundColor: 'var(--info-light)', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: 500, color: 'var(--info)' }}>
                       <Edit size={12} /> Edit
@@ -107,7 +107,7 @@ const DayEventsModal = ({ date, events, canAdd, canEdit, canDelete, todayKey, on
             <hr className="xui-my-1" />
             <button type="button" className="xui-btn xui-btn-block xui-bdr-rad-half xui-d-flex xui-flex-ai-center xui-flex-jc-center xui-grid-gap-half"
               style={{ backgroundColor: 'var(--primary-600)', color: 'var(--secondary-700)' }}
-              onClick={() => { modalHide(MODAL_ID); router.push(`/dashboard/candidate-portal/events/add?date=${date}`); }}>
+              onClick={() => { modalHide(MODAL_ID); router.push(`/dashboard/supporter-portal/events/add?date=${date}`); }}>
               <Add size={14} /> Add Event on This Day
             </button>
           </>

@@ -13,13 +13,12 @@ interface AddCategoryFormData {
 
 interface AddCategoryModalProps {
   accessIds: { module_unique_id: string; sub_module_unique_id: string } | null;
-  candidate_unique_id: string;
   onSuccess: (categoryId?: string) => void;
   setError: (error: string) => void;
   setSuccessMessage: (message: string) => void;
 }
 
-const AddCategoryModal = ({ accessIds, candidate_unique_id, onSuccess, setError, setSuccessMessage }: AddCategoryModalProps) => {
+const AddCategoryModal = ({ accessIds, onSuccess, setError, setSuccessMessage }: AddCategoryModalProps) => {
   const [adding, setAdding] = useState(false);
 
   const {
@@ -39,8 +38,8 @@ const AddCategoryModal = ({ accessIds, candidate_unique_id, onSuccess, setError,
 
     setAdding(true);
     try {
-      const response = await categoriesService.addCategory(
-        { name: data.name.trim(), candidate_unique_id },
+      const response = await categoriesService.portalAdd(
+        { name: data.name.trim() },
         {
           module_unique_id: accessIds.module_unique_id,
           sub_module_unique_id: accessIds.sub_module_unique_id,

@@ -2,8 +2,10 @@ import altApi from './altApi';
 
 export interface State {
   unique_id: string;
+  zone_unique_id: string | null;
   name: string;
   stripped: string;
+  Zone?: { unique_id: string; name: string; stripped: string } | null;
 }
 
 export interface StatesResponse {
@@ -19,7 +21,7 @@ const buildQueryParams = (params: Record<string, any>): string => {
 };
 
 const statesService = {
-  publicGetAll: async (params?: { page?: number; size?: number }): Promise<StatesResponse> => {
+  publicGetAll: async (params?: { page?: number; size?: number; zone_unique_id?: string }): Promise<StatesResponse> => {
     const response = await altApi.get(`/states?${buildQueryParams(params || {})}`);
     return response.data;
   },

@@ -190,9 +190,9 @@ const AllApprovals = () => {
       label: 'Status',
       type: 'select' as const,
       options: [
-        { value: 'pending', label: 'Pending' },
-        { value: 'approved', label: 'Approved' },
-        { value: 'denied', label: 'Denied' },
+        { value: 'Pending', label: 'Pending' },
+        { value: 'Approved', label: 'Approved' },
+        { value: 'Denied', label: 'Denied' },
       ],
     },
     { key: 'start_date', label: 'Start Date', type: 'date' as const },
@@ -236,7 +236,7 @@ const AllApprovals = () => {
   }, [moduleId, subModuleId, currentPage, fetchApprovals]);
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'pending': return 'xui-badge-warning';
       case 'approved': return 'xui-badge-success';
       case 'denied': return 'xui-badge-danger';
@@ -245,7 +245,7 @@ const AllApprovals = () => {
   };
 
   const getStatusText = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'pending': return 'Pending';
       case 'approved': return 'Approved';
       case 'denied': return 'Denied';
@@ -370,8 +370,8 @@ const AllApprovals = () => {
                         <td>
                           <div className="xui-tooltip" xui-set="left">
                             <span className="xui-cursor-pointer xui-d-inline-flex"><OverflowMenuVertical size={20} /></span>
-                            <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex' }}>
-                              {canEdit && approval.approval_status === 'pending' && (
+                            <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex', maxWidth: '500px' }}>
+                              {canEdit && approval.approval_status?.toLowerCase() === 'pending' && (
                                 <>
                                   <button
                                     onClick={() => handleAccept(approval)}

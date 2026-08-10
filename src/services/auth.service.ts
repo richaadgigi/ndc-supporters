@@ -4,16 +4,7 @@ export interface LoginPayload {
   email: string;
   password: string;
   remember_me?: boolean;
-}
-
-export interface LoginResponse {
-  success: boolean;
-  message: string;
-  data: {
-    token: string;
-    fullname: string;
-    acls: ACL[];
-  } | null;
+  support_group_unique_id?: string;
 }
 
 export interface ACL {
@@ -31,21 +22,22 @@ export interface ACL {
   status: number;
   createdAt: string;
   updatedAt: string;
-  Role: {
-    unique_id: string;
-    name: string;
-    stripped: string;
-  };
-  Module: {
-    unique_id: string;
-    name: string;
-    stripped: string;
-  };
-  SubModule: {
-    unique_id: string;
-    name: string;
-    stripped: string;
-  };
+  Role: { unique_id: string; name: string; stripped: string };
+  Module: { unique_id: string; name: string; stripped: string };
+  SubModule: { unique_id: string; name: string; stripped: string };
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  data: {
+    token: string;
+    fullname: string;
+    email?: string;
+    profile_image?: string | null;
+    acls: ACL[];
+    support_group_unique_id?: string | null;
+  } | null;
 }
 
 export interface PasswordRecoveryPayload {
@@ -58,8 +50,28 @@ export const authService = {
     return response.data;
   },
 
+  portalLogin: async (payload: LoginPayload): Promise<LoginResponse> => {
+    const response = await api.post('/auth/support/group/signin/via/email', payload);
+    return response.data;
+  },
+
+  memberLogin: async (payload: LoginPayload): Promise<LoginResponse> => {
+    const response = await api.post('/auth/support/group/member/signin/via/email', payload);
+    return response.data;
+  },
+
   verifyOtp: async (payload: { email: string; otp: string; remember_me?: boolean }): Promise<LoginResponse> => {
     const response = await api.post('/auth/otp/verify', payload);
+    return response.data;
+  },
+
+  verifySupportGroupOtp: async (payload: { email: string; otp: string; remember_me?: boolean }): Promise<LoginResponse> => {
+    const response = await api.post('/auth/support/group/otp/verify', payload);
+    return response.data;
+  },
+
+  verifySupportGroupMemberOtp: async (payload: { email: string; otp: string; remember_me?: boolean; support_group_unique_id?: string }): Promise<LoginResponse> => {
+    const response = await api.post('/auth/support/group/member/otp/verify', payload);
     return response.data;
   },
 

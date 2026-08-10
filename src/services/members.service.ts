@@ -3,17 +3,23 @@ import api from './api';
 export interface Member {
   unique_id: string;
   user_unique_id: string;
-  candidate_unique_id: string;
+  support_group_unique_id: string;
   member_role_unique_id: string;
   creator_unique_id: string | null;
-  code: string | null;
+  zone: string;
+  state: string | null;
+  lga: string | null;
+  ward: string | null;
+  constituency: string | null;
+  code: string;
   nin: string | null;
   status: number;
   createdAt: string;
   updatedAt: string;
-  User?: { unique_id: string; firstname: string; lastname: string; email: string };
-  Candidate?: { unique_id: string; name: string; stripped: string };
+  User?: { unique_id: string; firstname: string; middlename?: string | null; lastname: string; email: string; phone_number?: string | null; gender?: string | null; date_of_birth?: string | null; profile_image?: string | null; Role?: { unique_id: string; name: string; stripped: string } } | null;
+  SupportGroup?: { unique_id: string; name: string; stripped: string; image?: string | null; state?: string | null } | null;
   MemberRole?: { unique_id: string; name: string; stripped: string } | null;
+  Creator?: { unique_id: string; code?: string | null; nin?: string | null } | null;
 }
 
 export interface MembersResponse {
@@ -64,13 +70,48 @@ const membersService = {
     return response.data;
   },
 
-  add: async (data: { firstname: string; lastname: string; email: string; member_role_unique_id: string; candidate_unique_id: string; code: string; middlename?: string; phone_number?: string; gender?: string; date_of_birth?: string; nin?: string }, params: Omit<PaginationParams, 'page' | 'size'>): Promise<MemberResponse> => {
+  add: async (data: Record<string, any>, params: Omit<PaginationParams, 'page' | 'size'>): Promise<MemberResponse> => {
     const response = await api.post(`/user/member/add?${buildQueryParams(params)}`, data);
     return response.data;
   },
 
   remove: async (unique_id: string, params: Omit<PaginationParams, 'page' | 'size'>): Promise<{ success: boolean; message: string }> => {
     const response = await api.delete(`/user/member?${buildQueryParams(params)}`, { data: { unique_id } });
+    return response.data;
+  },
+
+  portalGetAll: async (params: PaginationParams): Promise<MembersResponse> => {
+    const response = await api.get(`/portal/team/members?${buildQueryParams(params)}`);
+    return response.data;
+  },
+
+  portalGetOne: async (unique_id: string, params: Omit<PaginationParams, 'page' | 'size'>): Promise<MemberResponse> => {
+    const response = await api.get(`/portal/team/member?${buildQueryParams({ unique_id, ...params })}`);
+    return response.data;
+  },
+
+  portalGetProfile: async (params?: Partial<Omit<PaginationParams, 'page' | 'size'>>): Promise<MemberResponse> => {
+    const response = await api.get(`/portal/member/profile?${buildQueryParams(params || {})}`);
+    return response.data;
+  },
+
+  portalSearch: async (params: SearchParams): Promise<MembersResponse> => {
+    const response = await api.get(`/portal/team/search/members?${buildQueryParams(params)}`);
+    return response.data;
+  },
+
+  portalFilter: async (params: FilterParams): Promise<MembersResponse> => {
+    const response = await api.get(`/portal/team/filter/members?${buildQueryParams(params)}`);
+    return response.data;
+  },
+
+  portalAdd: async (data: Record<string, any>, params: Omit<PaginationParams, 'page' | 'size'>): Promise<MemberResponse> => {
+    const response = await api.post(`/portal/team/member/add?${buildQueryParams(params)}`, data);
+    return response.data;
+  },
+
+  portalRemove: async (unique_id: string, params: Omit<PaginationParams, 'page' | 'size'>): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete(`/portal/team/member?${buildQueryParams(params)}`, { data: { unique_id } });
     return response.data;
   },
 };

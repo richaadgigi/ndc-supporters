@@ -5,7 +5,7 @@ import { GeneralProvider } from '@/context/GeneralContext';
 import StyleXuiProvider from '@/components/StyleXUIProvider';
 
 export const metadata: Metadata = {
-  title: 'NDC Campaign CRM',
+  title: 'NDC Supporters',
   description: 'NDC Campaign Management Portal',
   icons: { icon: '/ndc-logo3.jpeg' },
 };

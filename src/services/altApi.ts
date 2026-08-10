@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const altApi = axios.create({
-  baseURL: 'https://ndcaltapi.xnyder.com',
+  baseURL: '/api/altproxy',
   headers: { 'Content-Type': 'application/json' },
 });
 
