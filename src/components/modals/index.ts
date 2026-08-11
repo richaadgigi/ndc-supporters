@@ -1,8 +1,6 @@
 export { default as LogoutModal } from './LogoutModal';
 export { default as AddCategoryModal } from './AddCategoryModal';
 export { default as AddEventModal } from './AddEventModal';
-export { default as EventDetailModal } from './EventDetailModal';
-export { default as DayEventsModal } from './DayEventsModal';
 export { default as DeleteModal } from './DeleteModal';
 export { default as ExportModal } from './ExportModal';
 export { default as ConfirmModal } from './ConfirmModal';

@@ -2,20 +2,18 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Navbar } from '../../components/layout';
-import { ArrowLeft, Edit, View, UserAvatar, Calendar, Time, Location, Link as LinkIcon, Checkmark } from '@carbon/icons-react';
+import { ArrowLeft, View, UserAvatar, Calendar, Time, Location, Link as LinkIcon } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import eventsService from '../../services/events.service';
 import type { Event } from '../../services/events.service';
 import { formatDate } from '../../utils/formatters';
 import { Alert, showAlert } from '../../components/common';
-import { ConfirmModal } from '../../components/modals';
-import { modalShow } from '@richaadgigi/stylexui';
 import { DetailSkeleton } from '../../components/skeletons';
 
 const ViewEvent = () => {
   const router = useRouter();
   const { id } = useParams() as { id: string };
-  const { getAccessIds, checkAccess, supportGroupId } = useGeneral();
+  const { getAccessIds, supportGroupId } = useGeneral();
   const [loading, setLoading] = useState(true);
   const [item, setItem] = useState<Event | null>(null);
   const [actionError, setActionError] = useState('');
@@ -24,9 +22,6 @@ const ViewEvent = () => {
   const accessIds = getAccessIds('supporter-portal', 'events');
   const moduleId = accessIds?.module_unique_id;
   const subModuleId = accessIds?.sub_module_unique_id;
-
-  const accessResult = moduleId ? checkAccess(moduleId, subModuleId) : { hasAccess: false, accessTypes: [] };
-  const canEdit = accessResult.accessTypes.includes('edit');
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -39,14 +34,7 @@ const ViewEvent = () => {
     fetchItem();
   }, [id, moduleId, subModuleId, supportGroupId]);
 
-  const handleApproveItem = async () => {
-    if (!moduleId || !subModuleId || !item) return { success: false, message: 'Unable to approve' };
-    return eventsService.portalApprove({ unique_id: item.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
-  };
 
-  const handleApproveSuccess = () => {
-    setItem(prev => prev ? { ...prev, status: 1 } : prev);
-  };
 
   if (loading) return (
     <div>
@@ -72,7 +60,7 @@ const ViewEvent = () => {
       <Navbar title="Event" subtitle="View event details" />
       <div className="xui-py-1">
         <a
-          onClick={() => router.push('/dashboard/supporter-portal/events')}
+          onClick={() => router.push('/dashboard/events')}
           className="xui-d-inline-flex xui-flex-ai-center xui-grid-gap-half xui-cursor-pointer xui-mb-1-half"
           style={{ color: 'var(--neutral-600)', fontSize: '14px', textDecoration: 'none' }}
         >
@@ -238,38 +226,6 @@ const ViewEvent = () => {
                 </div>
               </div>
             </div>
-
-            {canEdit && (
-              <div className="xui-bg-white xui-bdr-rad-half xui-p-1" style={{ border: '1px solid var(--neutral-200)' }}>
-                <h4 className="xui-font-sz-85 xui-font-w-600 xui-mb-1" style={{ color: 'var(--neutral-800)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Actions
-                </h4>
-                <div className="xui-d-flex xui-flex-dir-column xui-grid-gap-half">
-                  {item.status !== 1 && (
-                    <button
-                      onClick={() => modalShow('approve-modal')}
-                      className="xui-d-flex xui-flex-ai-center xui-flex-jc-center xui-grid-gap-half xui-cursor-pointer xui-w-fluid-100 xui-font-sz-85 xui-font-w-500"
-                      style={{
-                        backgroundColor: 'var(--success)', color: '#fff',
-                        border: 'none', padding: '10px 16px', borderRadius: '6px',
-                      }}
-                    >
-                      <Checkmark size={16} /> Approve
-                    </button>
-                  )}
-                  <button
-                    onClick={() => router.push(`/dashboard/supporter-portal/events/edit/${item.unique_id}`)}
-                    className="xui-d-flex xui-flex-ai-center xui-flex-jc-center xui-grid-gap-half xui-cursor-pointer xui-w-fluid-100 xui-font-sz-85 xui-font-w-500"
-                    style={{
-                      backgroundColor: 'var(--primary-600)', color: 'var(--secondary-700)',
-                      border: 'none', padding: '10px 16px', borderRadius: '6px',
-                    }}
-                  >
-                    <Edit size={16} /> Edit Event
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
           </div>
         </div>
@@ -277,7 +233,6 @@ const ViewEvent = () => {
 
       <Alert id="error-alert" type="error" title="Error" message={actionError} />
       <Alert id="success-alert" type="success" title="Success" message={successMessage} />
-      <ConfirmModal id="approve-modal" title="Approve Event" message="Are you sure you want to approve this event? It will be published." itemName={item.title} confirmText="Approve" confirmingText="Approving..." confirmButtonStyle="success" onConfirm={handleApproveItem} onSuccess={handleApproveSuccess} setError={setActionError} setSuccessMessage={setSuccessMessage} showAlert={showAlert} />
     </div>
   );
 };

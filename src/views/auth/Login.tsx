@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -7,24 +7,18 @@ import { View, ViewOff, ArrowLeft } from '@carbon/icons-react';
 import { APP_NAME } from '../../Globals';
 import { useGeneral } from '../../context/GeneralContext';
 import authService from '../../services/auth.service';
-import supportGroupsService from '../../services/supportGroups.service';
-import type { SupportGroup } from '../../services/supportGroups.service';
 import { Alert, showAlert } from '../../components/common';
 import { extractErrorMessage } from '../../utils/formatters';
-
-type LoginType = 'admin' | 'portal' | 'member';
 
 interface LoginFormData {
   email: string;
   password: string;
   remember_me?: boolean;
-  support_group_unique_id?: string;
 }
 
 const Login = () => {
   const router = useRouter();
   const { login } = useGeneral();
-  const [loginType, setLoginType] = useState<LoginType>('portal');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -35,32 +29,12 @@ const Login = () => {
   const [otp, setOtp] = useState('');
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [supportGroups, setSupportGroups] = useState<SupportGroup[]>([]);
-  const [otpGroupId, setOtpGroupId] = useState('');
-
-  useEffect(() => {
-    if (loginType !== 'member' || supportGroups.length > 0) return;
-    supportGroupsService.publicGetAll({ size: 500 })
-      .then(res => { if (res.success && res.data) setSupportGroups(Array.isArray(res.data) ? res.data : (res.data as any).rows || []); })
-      .catch(() => {});
-  }, [loginType]);
-
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<LoginFormData>({ defaultValues: { remember_me: false } });
-
-  const handleTypeSwitch = (type: LoginType) => {
-    setLoginType(type);
-    reset();
-    setOtpRequired(false);
-    setOtp('');
-    setOtpEmail('');
-    setIsLoading(false);
-    setVerifyingOtp(false);
-  };
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -69,27 +43,21 @@ const Login = () => {
         email: data.email,
         password: data.password,
         remember_me: data.remember_me,
-        ...(loginType === 'member' && { support_group_unique_id: data.support_group_unique_id }),
       };
-      const response = loginType === 'admin'
-        ? await authService.login(payload)
-        : loginType === 'portal'
-          ? await authService.portalLogin(payload)
-          : await authService.memberLogin(payload);
+      const response = await authService.login(payload);
 
       if (response.success && response.data) {
         const { token, fullname, email, profile_image, acls, support_group_unique_id } = response.data;
-        const groupId = support_group_unique_id ?? data.support_group_unique_id ?? null;
+        const groupId = support_group_unique_id ?? null;
         setSuccessMessage('Login successful! Redirecting...');
         showAlert('success-alert');
         setTimeout(() => {
-          login(token, { fullname, email, profile_image }, acls ?? [], groupId, data.remember_me, loginType === 'admin' ? 'admin' : 'portal');
+          login(token, { fullname, email, profile_image }, acls ?? [], groupId, data.remember_me, 'admin');
           router.push('/dashboard');
         }, 1500);
       } else if (response.success && !response.data) {
         setOtpRequired(true);
         setOtpEmail(data.email);
-        setOtpGroupId(data.support_group_unique_id ?? '');
         setRememberMe(data.remember_me ?? false);
         setSuccessMessage(response.message || 'OTP sent to your email');
         showAlert('success-alert');
@@ -119,21 +87,16 @@ const Login = () => {
         email: otpEmail,
         otp,
         remember_me: rememberMe,
-        ...(loginType === 'member' && { support_group_unique_id: otpGroupId }),
       };
-      const response = loginType === 'admin'
-        ? await authService.verifyOtp(payload)
-        : loginType === 'portal'
-          ? await authService.verifySupportGroupOtp(payload)
-          : await authService.verifySupportGroupMemberOtp(payload);
+      const response = await authService.verifyOtp(payload);
 
       if (response.success && response.data) {
         const { token, fullname, email, profile_image, acls, support_group_unique_id } = response.data;
-        const groupId = support_group_unique_id ?? otpGroupId ?? null;
+        const groupId = support_group_unique_id ?? null;
         setSuccessMessage('OTP verified! Redirecting...');
         showAlert('success-alert');
         setTimeout(() => {
-          login(token, { fullname, email, profile_image }, acls ?? [], groupId, rememberMe, loginType === 'admin' ? 'admin' : 'portal');
+          login(token, { fullname, email, profile_image }, acls ?? [], groupId, rememberMe, 'admin');
           router.push('/dashboard');
         }, 1500);
       } else {
@@ -210,56 +173,7 @@ const Login = () => {
               <span className="xui-opacity-4">Welcome to {APP_NAME}</span>
             </p>
 
-            <div
-              className="xui-d-flex xui-flex-ai-center xui-mb-1-half"
-              style={{
-                background: 'var(--neutral-100)',
-                borderRadius: '10px',
-                padding: '4px',
-                gap: '4px',
-              }}
-            >
-              {(['admin', 'portal', 'member'] as LoginType[]).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => handleTypeSwitch(type)}
-                  className="xui-btn xui-btn-block xui-font-sz-[11px] xui-font-w-600"
-                  style={{
-                    borderRadius: '8px',
-                    padding: '8px 6px',
-                    background: loginType === type ? '#fff' : 'transparent',
-                    color: loginType === type ? 'var(--primary-600)' : 'var(--neutral-500)',
-                    border: 'none',
-                    boxShadow: loginType === type ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  {type === 'admin' ? 'Administrator' : type === 'portal' ? 'Group Leader' : 'Group Member'}
-                </button>
-              ))}
-            </div>
-
             <form onSubmit={handleSubmit(onSubmit)} className="xui-form">
-              {loginType === 'member' && (
-                <div className="xui-form-box">
-                  <label htmlFor="support_group_unique_id">Support Group</label>
-                  <select
-                    id="support_group_unique_id"
-                    {...register('support_group_unique_id', { required: loginType === 'member' ? 'Select your support group' : false })}
-                  >
-                    <option value="">Select your support group</option>
-                    {supportGroups.map((g) => (
-                      <option key={g.unique_id} value={g.unique_id}>
-                        {g.name}{g.state ? ` - ${g.state}` : ''}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.support_group_unique_id && (
-                    <span className="xui-font-sz-80 xui-text-red">{errors.support_group_unique_id.message}</span>
-                  )}
-                </div>
-              )}
 
               <div className="xui-form-box">
                 <label htmlFor="email">Email</label>
