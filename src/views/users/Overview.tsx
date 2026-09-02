@@ -87,7 +87,7 @@ const AdministrationOverview = () => {
                       series={stats.total_users_via_role.map((item) => item.total_count)}
                       options={{
                         labels: stats.total_users_via_role.map((item) => item.Role?.name || 'Unknown'),
-                        colors: ['#3f4195', '#ed3337', '#3B82F6', '#F59E0B', '#6567AA', '#D42D30'],
+                        colors: ['#009A49', '#111827', '#009A49', '#111827', '#29AA66', '#111827'],
                         legend: { position: 'bottom', fontSize: '12px' },
                         dataLabels: { enabled: true, formatter: (val: number) => `${val.toFixed(0)}%` },
                         plotOptions: { pie: { donut: { size: '55%' } } },

@@ -1,11 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { ViewFilled, ViewOffFilled, Password } from '@carbon/icons-react';
 import { Navbar } from '../../components/layout';
 import { Alert, showAlert } from '../../components/common';
 import { useGeneral } from '../../context/GeneralContext';
 import authService from '../../services/auth.service';
+import usersService from '../../services/users.service';
 
 interface PasswordFormData {
   oldPassword: string;
@@ -15,6 +16,8 @@ interface PasswordFormData {
 
 export default function Profile() {
   const { user, logout } = useGeneral();
+  const [email, setEmail] = useState('');
+  const [roleName, setRoleName] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -29,6 +32,17 @@ export default function Profile() {
     reset,
     formState: { errors },
   } = useForm<PasswordFormData>();
+
+  useEffect(() => {
+    usersService.getProfile()
+      .then(res => {
+        if (res.success && res.data) {
+          setEmail(res.data.email || '');
+          setRoleName(res.data.Role?.name || '');
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const onSubmit = async (data: PasswordFormData) => {
     setLoading(true);
@@ -76,7 +90,7 @@ export default function Profile() {
             <div className="xui-d-flex xui-flex-ai-center xui-grid-gap-1 xui-mt-1">
               <div
                 className="xui-bdr-rad-circle xui-d-flex xui-flex-ai-center xui-flex-jc-center xui-flex-shrink-0"
-                style={{ width: '56px', height: '56px', backgroundColor: '#ed3337' }}
+                style={{ width: '56px', height: '56px', backgroundColor: '#111827' }}
               >
                 <span className="xui-text-white xui-font-sz-[22px] xui-font-w-700">
                   {user?.fullname?.charAt(0)?.toUpperCase() || 'U'}
@@ -87,7 +101,7 @@ export default function Profile() {
                   {user?.fullname || 'User'}
                 </p>
                 <p className="xui-font-sz-[13px] xui-mt-[2px]" style={{ color: 'var(--neutral-500)' }}>
-                  {user?.email || 'CRM Administrator'}
+                  {roleName || 'User'}
                 </p>
               </div>
             </div>
@@ -95,7 +109,7 @@ export default function Profile() {
             <div className="xui-d-flex xui-flex-dir-column xui-grid-gap-1 xui-mt-1-half">
               <div>
                 <p className="xui-font-sz-[11px] xui-font-w-600 xui-text-uppercase" style={{ color: 'var(--neutral-400)', letterSpacing: '0.5px' }}>Email</p>
-                <p className="xui-font-sz-[14px] xui-mt-[4px]" style={{ color: 'var(--neutral-800)' }}>{user?.email || '—'}</p>
+                <p className="xui-font-sz-[14px] xui-mt-[4px]" style={{ color: 'var(--neutral-800)' }}>{email || user?.email || '—'}</p>
               </div>
               <div>
                 <p className="xui-font-sz-[11px] xui-font-w-600 xui-text-uppercase" style={{ color: 'var(--neutral-400)', letterSpacing: '0.5px' }}>Name</p>

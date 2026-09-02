@@ -112,7 +112,7 @@ const FilterModal = ({ id, fields, values, onApply, onClear, buttonText = 'Filte
         style={{
           border: activeCount > 0 ? '1px solid var(--primary-600)' : '1px solid var(--neutral-300)',
           color: activeCount > 0 ? 'var(--primary-600)' : 'var(--neutral-700)',
-          backgroundColor: activeCount > 0 ? 'var(--primary-50, #f0f9ff)' : 'transparent',
+          backgroundColor: activeCount > 0 ? 'var(--primary-50, #F2FAF6)' : 'transparent',
         }}
       >
         <span className="icon-container"><Filter size={16} /></span>

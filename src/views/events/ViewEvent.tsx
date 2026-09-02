@@ -129,7 +129,7 @@ const ViewEvent = () => {
                 <div className="xui-d-flex xui-flex-jc-space-between xui-flex-ai-center">
                   <span className="xui-font-sz-80 xui-opacity-5">Status</span>
                   <span className="xui-font-sz-70 xui-font-w-500" style={{
-                    backgroundColor: item.status === 1 ? 'var(--success)' : item.status === 2 ? 'var(--warning, #f59e0b)' : 'var(--error)',
+                    backgroundColor: item.status === 1 ? 'var(--success)' : item.status === 2 ? 'var(--warning, #111827)' : 'var(--error)',
                     color: '#fff', padding: '3px 10px', borderRadius: '4px',
                   }}>
                     {item.status === 1 ? 'Published' : item.status === 2 ? 'Pending' : 'Draft'}
