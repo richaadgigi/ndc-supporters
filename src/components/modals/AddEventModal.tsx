@@ -211,7 +211,7 @@ const AddEventModal = ({ date, accessIds, onSuccess, setError, setSuccessMessage
           <div className="xui-form-box" style={{ minWidth: 0, overflow: 'hidden' }}>
             <label>Description *</label>
             <QuillEditor value={description} onChange={setDescription} />
-            <p style={{ fontSize: '12px', marginTop: '6px', color: description.length > 65535 ? 'var(--error)' : description.length > 55000 ? 'var(--warning, #f59e0b)' : 'var(--neutral-400)' }}>
+            <p style={{ fontSize: '12px', marginTop: '6px', color: description.length > 65535 ? 'var(--error)' : description.length > 55000 ? 'var(--warning, #111827)' : 'var(--neutral-400)' }}>
               {description.length.toLocaleString()} / 65,535 characters
             </p>
           </div>

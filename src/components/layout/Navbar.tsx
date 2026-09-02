@@ -323,7 +323,7 @@ const Navbar = ({ title, subtitle, heading }: NavbarProps) => {
               ) : (
                 <div
                   className="xui-bdr-rad-circle xui-d-flex xui-flex-ai-center xui-flex-jc-center"
-                  style={{ width: '30px', height: '30px', backgroundColor: '#ed3337' }}
+                  style={{ width: '30px', height: '30px', backgroundColor: '#111827' }}
                 >
                   <span style={{ color: '#fff', fontSize: '12px', fontWeight: 600 }}>
                     {user?.fullname?.charAt(0)?.toUpperCase() || 'U'}

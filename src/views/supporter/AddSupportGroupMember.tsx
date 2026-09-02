@@ -15,6 +15,11 @@ import { extractErrorMessage, sortAlphabetically } from '../../utils/formatters'
 
 const unwrap = (res: any): any[] => (res?.success && res.data ? (Array.isArray(res.data) ? res.data : res.data.rows || []) : []);
 
+const getInitials = (m: Member): string => {
+  if (m.User) return `${m.User.firstname?.charAt(0) || ''}${m.User.lastname?.charAt(0) || ''}`.toUpperCase();
+  return (m.code || '').slice(-2).toUpperCase();
+};
+
 interface FormData {
   support_group_unique_id: string;
   firstname: string;
@@ -129,19 +134,85 @@ const AddSupportGroupMember = () => {
         <p className="xui-font-sz-[16px] xui-opacity-4">
           {mode === 'new'
             ? 'This creates a login account for the person and joins them to the selected support group. They will appear as Pending until approved.'
-            : 'This joins an existing NDC member to the selected support group using their member profile. They will appear as Pending until approved.'}
+            : 'This joins an existing member to the selected support group using their member profile. They will appear as Pending until approved.'}
         </p>
 
-        <div className="xui-d-flex xui-flex-ai-center xui-grid-gap-half xui-mt-1">
+        <div className="xui-d-flex xui-grid-gap-0 xui-mt-1 xui-mb-2" style={{ borderBottom: '2px solid var(--neutral-200)' }}>
           {(['new', 'existing'] as const).map(m => (
-            <button key={m} type="button" onClick={() => setMode(m)} className="xui-btn xui-btn-text xui-font-sz-80 xui-bdr-rad-half xui-font-w-500" style={mode === m ? { backgroundColor: 'var(--primary-600)', color: 'var(--secondary-700)' } : { border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)' }}>
+            <button key={m} type="button" onClick={() => setMode(m)} className="xui-btn xui-font-sz-85"
+              style={{ borderRadius: 0, backgroundColor: 'transparent', marginBottom: '-2px',
+                borderBottom: mode === m ? '2px solid var(--primary-600)' : '2px solid transparent',
+                color: mode === m ? 'var(--primary-600)' : 'inherit',
+                fontWeight: mode === m ? 600 : 400 }}>
               {m === 'new' ? 'New person' : 'Existing member'}
             </button>
           ))}
         </div>
-        <hr className="xui-my-2" />
 
         <form onSubmit={mode === 'new' ? handleSubmit(onSubmit) : (e) => { e.preventDefault(); onSubmitExisting(); }} className="xui-form">
+          {mode === 'existing' ? (
+            <div>
+              <div className="xui-d-grid xui-grid-col-1 xui-lg-grid-col-2 xui-grid-gap-1">
+                <div className="xui-form-box" {...(errors.support_group_unique_id && { 'xui-error': 'true' })}>
+                  <label htmlFor="support_group_unique_id">Support Group *</label>
+                  <select id="support_group_unique_id" {...register('support_group_unique_id', { required: 'Support group is required' })}>
+                    <option value="">Select a support group</option>
+                    {supportGroups.map(g => (
+                      <option key={g.unique_id} value={g.unique_id}>{g.name}{g.state ? ` - ${g.state}` : ''}</option>
+                    ))}
+                  </select>
+                  {errors.support_group_unique_id && <span className="message">{errors.support_group_unique_id.message}</span>}
+                </div>
+                <div className="xui-form-box">
+                  <label htmlFor="member-search">Find Member</label>
+                  <input type="text" id="member-search" placeholder="Search by name, email or code" value={memberQuery} onChange={(e) => setMemberQuery(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="xui-bdr-rad-half xui-overflow-hidden xui-mt-1" style={{ border: '1px solid var(--neutral-200)' }}>
+                <div className="xui-d-flex xui-flex-ai-center xui-flex-jc-space-between xui-grid-gap-half xui-py-1 xui-px-1" style={{ borderBottom: '1px solid var(--neutral-200)', background: 'var(--neutral-100)' }}>
+                  <span className="xui-font-sz-80 xui-font-w-600" style={{ color: 'var(--neutral-700)' }}>
+                    {membersLoading ? 'Searching...' : `${members.length} member${members.length === 1 ? '' : 's'}`}
+                  </span>
+                  {selectedMemberId && !membersLoading && (
+                    <span className="xui-font-sz-80 xui-font-w-600" style={{ color: 'var(--primary-600)' }}>1 selected</span>
+                  )}
+                </div>
+                <div className="xui-p-1">
+                  {membersLoading ? (
+                    <div className="xui-d-grid xui-grid-gap-half">
+                      {[1, 2, 3].map(i => <div key={i} className="xui--skeleton xui-h-50 xui-bdr-rad-half" />)}
+                    </div>
+                  ) : members.length === 0 ? (
+                    <p className="xui-font-sz-85 xui-opacity-5 xui-text-center xui-py-2" style={{ margin: 0 }}>No members found.</p>
+                  ) : (
+                    <div className="xui-d-grid xui-grid-gap-half" style={{ maxHeight: '360px', overflowY: 'auto' }}>
+                      {members.map(m => {
+                        const active = selectedMemberId === m.unique_id;
+                        return (
+                          <label
+                            key={m.unique_id}
+                            className="xui-d-flex xui-flex-ai-center xui-grid-gap-1 xui-p-1 xui-bdr-rad-half xui-cursor-pointer"
+                            style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: '12px', marginBottom: 0, border: `1px solid ${active ? 'var(--primary-600)' : 'var(--neutral-200)'}`, background: active ? 'var(--primary-50)' : '#FFFFFF' }}
+                          >
+                            <input type="radio" name="member" value={m.unique_id} checked={active} onChange={() => setSelectedMemberId(m.unique_id)} style={{ flexShrink: 0, margin: 0 }} />
+                            <span className="xui-d-flex xui-flex-ai-center xui-flex-jc-center xui-bdr-rad-circle xui-font-sz-80 xui-font-w-600" style={{ width: '36px', height: '36px', flexShrink: 0, background: 'var(--primary-100)', color: 'var(--primary-700)' }}>
+                              {getInitials(m)}
+                            </span>
+                            <span style={{ minWidth: 0 }}>
+                              <span className="xui-d-block xui-font-w-500">{m.User ? `${m.User.firstname} ${m.User.lastname}` : m.code}</span>
+                              <span className="xui-d-block xui-font-sz-80 xui-opacity-5" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{[m.User?.email, m.code, m.state].filter(Boolean).join(' • ')}</span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+          <>
           <div className="xui-form-box" {...(errors.support_group_unique_id && { 'xui-error': 'true' })}>
             <label htmlFor="support_group_unique_id">Support Group *</label>
             <select id="support_group_unique_id" {...register('support_group_unique_id', { required: 'Support group is required' })}>
@@ -152,34 +223,6 @@ const AddSupportGroupMember = () => {
             </select>
             {errors.support_group_unique_id && <span className="message">{errors.support_group_unique_id.message}</span>}
           </div>
-
-          {mode === 'existing' ? (
-            <div>
-              <div className="xui-form-box">
-                <label htmlFor="member-search">Find Member</label>
-                <input type="text" id="member-search" placeholder="Search by name, email or code" value={memberQuery} onChange={(e) => setMemberQuery(e.target.value)} />
-              </div>
-              {membersLoading ? (
-                <div className="xui-d-grid xui-grid-gap-half">
-                  {[1, 2, 3].map(i => <div key={i} className="xui--skeleton xui-h-50 xui-bdr-rad-half" />)}
-                </div>
-              ) : members.length === 0 ? (
-                <p className="xui-font-sz-85 xui-opacity-5 xui-py-1">No members found.</p>
-              ) : (
-                <div className="xui-d-grid xui-grid-gap-half" style={{ maxHeight: '360px', overflowY: 'auto' }}>
-                  {members.map(m => (
-                    <label key={m.unique_id} className="xui-d-flex xui-flex-ai-center xui-grid-gap-1 xui-p-1 xui-bdr-rad-half xui-cursor-pointer" style={{ border: `1px solid ${selectedMemberId === m.unique_id ? 'var(--primary-600)' : 'var(--neutral-300)'}` }}>
-                      <input type="radio" name="member" value={m.unique_id} checked={selectedMemberId === m.unique_id} onChange={() => setSelectedMemberId(m.unique_id)} />
-                      <span>
-                        <span className="xui-d-block xui-font-w-500">{m.User ? `${m.User.firstname} ${m.User.lastname}` : m.code}</span>
-                        <span className="xui-d-block xui-font-sz-80 xui-opacity-5">{[m.User?.email, m.code, m.state].filter(Boolean).join(' • ')}</span>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
           <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-2 xui-grid-gap-2">
             <div>
               <p className="xui-font-sz-85 xui-font-w-bold xui-mb-1 xui-opacity-6">Member Details</p>
@@ -251,6 +294,7 @@ const AddSupportGroupMember = () => {
               </div>
             </div>
           </div>
+          </>
           )}
 
           <hr className="xui-my-2" />

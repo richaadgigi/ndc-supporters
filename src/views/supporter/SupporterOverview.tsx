@@ -10,7 +10,7 @@ import type { SupporterStats, SupportGroupPortalStats } from '../../services/ana
 import { EmptyState, ErrorState } from '../../components/common';
 import { OverviewSkeleton } from '../../components/skeletons';
 
-const CHART_COLORS = ['#3f4195', '#ed3337', '#3B82F6', '#F59E0B', '#6567AA', '#D42D30', '#32347B', '#8C8DBF'];
+const CHART_COLORS = ['#009A49', '#111827', '#009A49', '#111827', '#29AA66', '#111827', '#007E3C', '#5CBE8B'];
 
 const SupporterOverview = () => {
   const { getAccessIds } = useGeneral();
@@ -72,7 +72,7 @@ const SupporterOverview = () => {
                   <MetricCard title="Announcements" value={portalStats.total_announcements} icon={<Bullhorn size={24} />} iconBgColor="var(--info-light)" iconColor="var(--info)" />
                   <MetricCard title="Posts" value={portalStats.total_posts} icon={<Blog size={24} />} iconBgColor="var(--success-light)" iconColor="var(--success)" />
                   <MetricCard title="Events" value={portalStats.total_events} icon={<EventSchedule size={24} />} iconBgColor="var(--warning-light)" iconColor="var(--warning)" />
-                  <MetricCard title="Enquiries" value={portalStats.total_enquiries} icon={<Email size={24} />} iconBgColor="#fce7f3" iconColor="#ed3337" />
+                  <MetricCard title="Enquiries" value={portalStats.total_enquiries} icon={<Email size={24} />} iconBgColor="#E0F3E9" iconColor="#111827" />
                   <MetricCard title="Announcement Views" value={portalStats.announcement_views_sum} icon={<View size={24} />} iconBgColor="var(--neutral-100)" iconColor="var(--neutral-600)" />
                   <MetricCard title="Post Views" value={portalStats.post_views_sum} icon={<View size={24} />} iconBgColor="var(--neutral-100)" iconColor="var(--neutral-600)" />
                   <MetricCard title="Event Views" value={portalStats.event_views_sum} icon={<View size={24} />} iconBgColor="var(--neutral-100)" iconColor="var(--neutral-600)" />
@@ -99,7 +99,7 @@ const SupporterOverview = () => {
                           labels: { style: { fontSize: '11px', colors: 'var(--neutral-400)' }, rotate: -30 },
                         },
                         yaxis: { labels: { style: { fontSize: '11px', colors: 'var(--neutral-400)' } } },
-                        colors: ['#3f4195'],
+                        colors: ['#009A49'],
                         plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } },
                         dataLabels: { enabled: false },
                         grid: { borderColor: 'var(--neutral-100)', strokeDashArray: 4 },

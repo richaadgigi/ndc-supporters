@@ -95,7 +95,7 @@ const MemberRoleAclOverview = () => {
                       series={(stats.total_member_role_acls_via_member_role ?? []).map(item => item.total_count)}
                       options={{
                         labels: (stats.total_member_role_acls_via_member_role ?? []).map(item => item.MemberRole?.name || 'Unknown'),
-                        colors: ['#3f4195', '#ed3337', '#3B82F6', '#F59E0B', '#6567AA'],
+                        colors: ['#009A49', '#111827', '#009A49', '#111827', '#29AA66'],
                         legend: { position: 'bottom', fontSize: '12px' },
                         dataLabels: { enabled: true, formatter: (val: number) => `${val.toFixed(0)}%` },
                         plotOptions: { pie: { donut: { size: '55%' } } },
@@ -119,7 +119,7 @@ const MemberRoleAclOverview = () => {
                       series={(stats.total_member_role_acls_via_module ?? []).map(item => item.total_count)}
                       options={{
                         labels: (stats.total_member_role_acls_via_module ?? []).map(item => item.Module?.name || 'Unknown'),
-                        colors: ['#3f4195', '#ed3337', '#3B82F6', '#F59E0B', '#6567AA', '#D42D30', '#32347B'],
+                        colors: ['#009A49', '#111827', '#009A49', '#111827', '#29AA66', '#111827', '#007E3C'],
                         legend: { position: 'bottom', fontSize: '12px' },
                         dataLabels: { enabled: true, formatter: (val: number) => `${val.toFixed(0)}%` },
                         plotOptions: { pie: { donut: { size: '55%' } } },
@@ -147,7 +147,7 @@ const MemberRoleAclOverview = () => {
                           labels: { style: { fontSize: '11px' }, rotate: -45 },
                         },
                         yaxis: { title: { text: 'Count' } },
-                        colors: ['#3f4195'],
+                        colors: ['#009A49'],
                         plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } },
                         dataLabels: { enabled: false },
                       }}

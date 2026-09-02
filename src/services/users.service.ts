@@ -84,6 +84,11 @@ const buildQueryParams = (params: Record<string, any>): string => {
 };
 
 export const usersService = {
+  getProfile: async (): Promise<UserResponse> => {
+    const response = await api.get('/user/profile');
+    return response.data;
+  },
+
   getUsers: async (params: PaginationParams): Promise<UsersResponse> => {
     const query = buildQueryParams(params);
     const response = await api.get(`/users?${query}`);

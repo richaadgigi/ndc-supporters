@@ -108,7 +108,7 @@ const RolesOverview = () => {
                       series={stats.total_role_acls_via_role.map((item) => item.total_count)}
                       options={{
                         labels: stats.total_role_acls_via_role.map((item) => item.Role?.name || 'Unknown'),
-                        colors: ['#3f4195', '#ed3337', '#3B82F6', '#F59E0B', '#6567AA'],
+                        colors: ['#009A49', '#111827', '#009A49', '#111827', '#29AA66'],
                         legend: { position: 'bottom', fontSize: '12px' },
                         dataLabels: { enabled: true, formatter: (val: number) => `${val.toFixed(0)}%` },
                         plotOptions: { pie: { donut: { size: '55%' } } },
@@ -131,7 +131,7 @@ const RolesOverview = () => {
                       series={stats.total_role_acls_via_module.map((item) => item.total_count)}
                       options={{
                         labels: stats.total_role_acls_via_module.map((item) => item.Module?.name || 'Unknown'),
-                        colors: ['#3f4195', '#ed3337', '#3B82F6', '#F59E0B', '#6567AA', '#D42D30', '#32347B', '#8C8DBF'],
+                        colors: ['#009A49', '#111827', '#009A49', '#111827', '#29AA66', '#111827', '#007E3C', '#5CBE8B'],
                         legend: { position: 'bottom', fontSize: '12px' },
                         dataLabels: { enabled: true, formatter: (val: number) => `${val.toFixed(0)}%` },
                         plotOptions: { pie: { donut: { size: '55%' } } },
@@ -161,7 +161,7 @@ const RolesOverview = () => {
                           labels: { style: { fontSize: '11px' }, rotate: -45 },
                         },
                         yaxis: { title: { text: 'Count' } },
-                        colors: ['#3f4195'],
+                        colors: ['#009A49'],
                         plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } },
                         dataLabels: { enabled: false },
                       }}

@@ -109,7 +109,7 @@ const ViewPost = () => {
                 <div className="xui-d-flex xui-flex-dir-column xui-grid-gap-1">
                   <div className="xui-d-flex xui-flex-jc-space-between xui-flex-ai-center">
                     <span className="xui-font-sz-80 xui-opacity-5">Status</span>
-                    <span className="xui-font-sz-70 xui-font-w-500" style={{ backgroundColor: item.approved_by ? 'var(--success)' : '#d97706', color: '#fff', padding: '3px 10px', borderRadius: '4px' }}>
+                    <span className="xui-font-sz-70 xui-font-w-500" style={{ backgroundColor: item.approved_by ? 'var(--success)' : '#111827', color: '#fff', padding: '3px 10px', borderRadius: '4px' }}>
                       {item.approved_by ? 'Published' : 'Pending'}
                     </span>
                   </div>

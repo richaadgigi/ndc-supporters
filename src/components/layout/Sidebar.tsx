@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { APP_SHORT_NAME } from '../../Globals';
 import {
   Dashboard,
+  Partnership,
   UserMultiple,
   Settings,
   Logout,
@@ -77,6 +78,7 @@ const subModuleIcons: Record<string, React.ReactNode> = {
   'posts': <Blog size={16} />,
 
   'supporter-overview': <Dashboard size={16} />,
+  'partners': <Partnership size={16} />,
   'support-group-types': <Notebook size={16} />,
   'support-groups': <Group size={16} />,
   'support-group-members': <UserMultiple size={16} />,
@@ -121,6 +123,7 @@ const subModulePaths: Record<string, string> = {
   'posts': '/posts',
 
   'supporter-overview': '/overview',
+  'partners': '/partners',
   'support-group-types': '/support-group-types',
   'support-groups': '/support-groups',
   'support-group-members': '/support-group-members',
@@ -325,7 +328,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
           {!collapsed ? (
             <>
               <div className="xui-d-flex xui-flex-ai-center xui-grid-gap-half">
-                <img src="/ndc-logo2.jpeg" alt="NDC" className="xui-img-[40px]" />
+                <img src="/tdm-logo.jpeg" alt="TDM" className="xui-img-[40px]" />
                 <span className="xui-font-sz-[14px] xui-font-w-700 xui-text-white">{APP_SHORT_NAME}</span>
               </div>
               <button

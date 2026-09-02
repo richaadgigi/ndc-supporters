@@ -139,7 +139,7 @@ const FileUpload = ({
               disabled={uploading}
               className="xui-btn xui-btn-sm xui-bdr-rad-half"
               style={{
-                backgroundColor: 'var(--error-light, #fee2e2)',
+                backgroundColor: 'var(--error-light, #E5E7EB)',
                 color: 'var(--error)',
                 border: '1px solid var(--error)',
               }}
@@ -158,7 +158,7 @@ const FileUpload = ({
           className="xui-d-flex xui-flex-dir-column xui-flex-ai-center xui-flex-jc-center xui-bdr-rad-half xui-cursor-pointer xui-p-1"
           style={{
             border: `2px dashed ${dragOver ? 'var(--primary-600)' : 'var(--neutral-300)'}`,
-            backgroundColor: dragOver ? 'var(--primary-50, #f0f9ff)' : 'var(--neutral-50)',
+            backgroundColor: dragOver ? 'var(--primary-50, #F2FAF6)' : 'var(--neutral-50)',
             minHeight: '120px',
             transition: 'all 0.2s ease',
           }}

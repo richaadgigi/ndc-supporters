@@ -1,5 +1,5 @@
 'use client';
-import { Trophy, Person, UserMultiple, Report, UserAdmin } from '@carbon/icons-react';
+import { Group, GroupPresentation, UserMultiple, Report, UserAdmin } from '@carbon/icons-react';
 import { useRouter } from 'next/navigation';
 
 interface QuickAction {
@@ -15,25 +15,25 @@ const QuickActions = () => {
 
   const actions: QuickAction[] = [
     {
-      label: 'Add Position',
-      icon: <Trophy size={20} />,
+      label: 'Add Support Group',
+      icon: <Group size={20} />,
       bgColor: 'var(--primary-100)',
       iconColor: 'var(--primary-700)',
-      path: '/dashboard/campaign/positions/add',
+      path: '/dashboard/supporter/support-groups/add',
     },
     {
-      label: 'Add Candidate',
-      icon: <Person size={20} />,
+      label: 'Add Group Member',
+      icon: <GroupPresentation size={20} />,
       bgColor: 'var(--info-light)',
       iconColor: 'var(--info)',
-      path: '/dashboard/campaign/candidates/add',
+      path: '/dashboard/supporter/support-group-members/add',
     },
     {
       label: 'Add Member',
       icon: <UserMultiple size={20} />,
       bgColor: 'var(--success-light)',
       iconColor: 'var(--success)',
-      path: '/dashboard/campaign/members/add',
+      path: '/dashboard/supporter/members/add',
     },
     {
       label: 'Manage Users',
