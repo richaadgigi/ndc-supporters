@@ -5,6 +5,10 @@ import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
 import QuillMediaModal from './common/QuillMediaModal';
 
+const EDITOR_MEDIA_FOLDER = process.env.NEXT_PUBLIC_CLOUDER_UPLOAD_FOLDER
+    ? `${process.env.NEXT_PUBLIC_CLOUDER_UPLOAD_FOLDER}/editor_media`
+    : 'editor_media';
+
 // Dynamically import react-quill-new to avoid SSR issues with Next.js
 const ReactQuill = dynamic(
     async () => {
@@ -115,7 +119,7 @@ const QuillEditor = ({ value, onChange, placeholder = 'Enter content...' }: Quil
             try {
                 // Upload to Cloudinary
                 const { cloudinaryUpload } = await import('../utils/cloudinary');
-                const result = await cloudinaryUpload(file, 'editor_media');
+                const result = await cloudinaryUpload(file, EDITOR_MEDIA_FOLDER);
 
                 // Find the base64 string in Quill's Deltas and replace it
                 const contents = quill.getContents();
