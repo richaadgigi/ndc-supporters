@@ -46,7 +46,7 @@ const ViewGallery = () => {
     if (!id || !moduleId) return;
     setLoading(true); setFetchError('');
     try {
-      const response = await galleryService.portalGetOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await galleryService.getOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       if (response.success && response.data) {
         setItem(response.data);
       } else {
@@ -65,7 +65,7 @@ const ViewGallery = () => {
     if (!moduleId || !subModuleId || !item) return;
     setSaving(true);
     try {
-      const response = await galleryService.portalEditDetails({ unique_id: item.unique_id, title: data.title }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await galleryService.editDetails({ unique_id: item.unique_id, title: data.title }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       if (response.success) { setSuccessMessage('Details updated successfully'); showAlert('success-alert'); setEditingDetails(false); fetchItem(); }
       else { setActionError(response.message || 'Failed to update details'); showAlert('error-alert'); }
     } catch (err: any) { setActionError(extractErrorMessage(err, 'Failed to update details')); showAlert('error-alert'); } finally { setSaving(false); }
@@ -75,7 +75,7 @@ const ViewGallery = () => {
     if (!moduleId || !subModuleId || !item) return;
     setSaving(true);
     try {
-      const response = await galleryService.portalEditTags({ unique_id: item.unique_id, tags: editTags }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await galleryService.editTags({ unique_id: item.unique_id, tags: editTags }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       if (response.success) { setSuccessMessage('Tags updated successfully'); showAlert('success-alert'); setEditingTags(false); fetchItem(); }
       else { setActionError(response.message || 'Failed to update tags'); showAlert('error-alert'); }
     } catch (err: any) { setActionError(extractErrorMessage(err, 'Failed to update tags')); showAlert('error-alert'); } finally { setSaving(false); }
@@ -85,7 +85,7 @@ const ViewGallery = () => {
     if (!moduleId || !subModuleId || !item || !editImage) return;
     setSaving(true);
     try {
-      const response = await galleryService.portalEditFile({ unique_id: item.unique_id, image: editImage, image_public_id: editImagePublicId }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await galleryService.editFile({ unique_id: item.unique_id, image: editImage, image_public_id: editImagePublicId }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       if (response.success) { setSuccessMessage('Image updated successfully'); showAlert('success-alert'); setEditingImage(false); fetchItem(); }
       else { setActionError(response.message || 'Failed to update image'); showAlert('error-alert'); }
     } catch (err: any) { setActionError(extractErrorMessage(err, 'Failed to update image')); showAlert('error-alert'); } finally { setSaving(false); }
@@ -93,7 +93,7 @@ const ViewGallery = () => {
 
   const handleDeleteItem = async () => {
     if (!moduleId || !subModuleId || !item) return { success: false, message: 'Unable to delete' };
-    return galleryService.portalRemove(item.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return galleryService.remove(item.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   return (

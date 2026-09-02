@@ -1,5 +1,5 @@
 ﻿'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import QuillEditor from '@/components/QuillEditor';
@@ -7,10 +7,12 @@ import { Navbar } from '../../components/layout';
 import { ArrowLeft } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import announcementsService from '../../services/announcements.service';
+import supportGroupsService from '../../services/supportGroups.service';
+import type { SupportGroup } from '../../services/supportGroups.service';
 import { Alert, showAlert } from '../../components/common';
 import { extractErrorMessage, sanitizeHTML } from '../../utils/formatters';
 
-interface FormData { title: string; start_date: string; end_date: string; }
+interface FormData { support_group_unique_id: string; title: string; start_date: string; end_date: string; }
 
 const AddAnnouncement = () => {
   const router = useRouter();
@@ -22,7 +24,29 @@ const AddAnnouncement = () => {
 
   const accessIds = getAccessIds('supporter-portal', 'announcements');
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ defaultValues: { title: '', start_date: '', end_date: '' } });
+
+
+  const [supportGroups, setSupportGroups] = useState<SupportGroup[]>([]);
+
+
+
+  useEffect(() => {
+
+
+    if (!accessIds) return;
+
+
+    supportGroupsService.getAll({ size: 500, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id })
+
+
+      .then(res => { if (res.success && res.data) setSupportGroups(Array.isArray(res.data) ? res.data : (res.data as any).rows || []); })
+
+
+      .catch(() => {});
+
+
+  }, [accessIds?.module_unique_id]);
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ defaultValues: { support_group_unique_id: '', title: '', start_date: '', end_date: '' } });
 
   const onSubmit = async (data: FormData) => {
     if (!accessIds) { setError('You do not have access to this module'); showAlert('error-alert'); return; }
@@ -30,8 +54,8 @@ const AddAnnouncement = () => {
     if (!cleanDescription) { setError('Description is required'); showAlert('error-alert'); return; }
     setLoading(true);
     try {
-      const response = await announcementsService.portalAdd(
-        {
+      const response = await announcementsService.add(
+        { support_group_unique_id: data.support_group_unique_id,
           title: data.title,
           description: cleanDescription,
           ...(data.start_date && { start_date: `${data.start_date} 00:00` }),
@@ -56,6 +80,16 @@ const AddAnnouncement = () => {
         <p className="xui-font-sz-[16px] xui-opacity-4">Fill in the announcement details below. Fields marked with * are required.</p>
         <hr className="xui-my-2" />
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form">
+          <div className="xui-form-box" {...(errors.support_group_unique_id && { 'xui-error': 'true' })}>
+            <label htmlFor="support_group_unique_id">Support Group *</label>
+            <select id="support_group_unique_id" {...register('support_group_unique_id', { required: 'Support group is required' })}>
+              <option value="">Select a support group</option>
+              {supportGroups.map(g => (
+                <option key={g.unique_id} value={g.unique_id}>{g.name}{g.state ? ` - ${g.state}` : ''}</option>
+              ))}
+            </select>
+            {errors.support_group_unique_id && <span className="message">{errors.support_group_unique_id.message}</span>}
+          </div>
           <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-2 xui-grid-gap-2">
             <div>
               <div className="xui-form-box" {...(errors.title && { 'xui-error': 'true' })}>

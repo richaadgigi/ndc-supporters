@@ -49,12 +49,12 @@ const EditPost = () => {
         setDescription(data.description || '');
         setImage(data.image || '');
         setImagePublicId(data.image_public_id || '');
-        categoriesService.portalGetAll({ size: 200, module_unique_id: moduleId, sub_module_unique_id: subModuleId }).then(res => {
+        categoriesService.getAll({ size: 200, module_unique_id: moduleId, sub_module_unique_id: subModuleId }).then(res => {
           if (res.success && res.data) setCategories(Array.isArray(res.data) ? res.data : (res.data as any).rows || []);
         }).catch(() => {});
       };
       try {
-        const itemRes = await postsService.portalGetOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+        const itemRes = await postsService.getOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
         if (itemRes.success && itemRes.data) populate(itemRes.data);
       } catch (err: any) { setError(extractErrorMessage(err, 'Failed to load post')); showAlert('error-alert'); } finally { setLoadingItem(false); }
     };
@@ -71,16 +71,16 @@ const EditPost = () => {
       const params = { module_unique_id: moduleId, sub_module_unique_id: subModuleId };
       const promises: Promise<any>[] = [];
 
-      promises.push(postsService.portalEditDetails({ unique_id: id, title: data.title, alt_text: data.alt_text || null }, params));
-      promises.push(postsService.portalEditDescription({ unique_id: id, description: cleanDescription }, params));
-      promises.push(postsService.portalEditTags({ unique_id: id, tags: data.tags.length > 0 ? data.tags : null }, params));
+      promises.push(postsService.editDetails({ unique_id: id, title: data.title, alt_text: data.alt_text || null }, params));
+      promises.push(postsService.editDescription({ unique_id: id, description: cleanDescription }, params));
+      promises.push(postsService.editTags({ unique_id: id, tags: data.tags.length > 0 ? data.tags : null }, params));
 
       if (data.category_unique_id && data.category_unique_id !== (item.category_unique_id || '')) {
-        promises.push(postsService.portalEditCategory({ unique_id: id, category_unique_id: data.category_unique_id }, params));
+        promises.push(postsService.editCategory({ unique_id: id, category_unique_id: data.category_unique_id }, params));
       }
 
       if (image !== (item.image || '') || imagePublicId !== (item.image_public_id || '')) {
-        promises.push(postsService.portalEditImage({ unique_id: id, image, image_public_id: imagePublicId }, params));
+        promises.push(postsService.editImage({ unique_id: id, image, image_public_id: imagePublicId }, params));
       }
 
       const results = await Promise.all(promises);
@@ -92,7 +92,7 @@ const EditPost = () => {
 
   const handleApproveConfirm = async (): Promise<{ success: boolean; message: string }> => {
     if (!moduleId || !subModuleId || !id) return { success: false, message: 'Missing access information' };
-    const response = await postsService.portalApprove({ unique_id: id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    const response = await postsService.approve({ unique_id: id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
     if (response.success) setItem(prev => prev ? { ...prev, approved_by: 'approved', status: 1 } : prev);
     return response;
   };

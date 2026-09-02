@@ -48,7 +48,7 @@ const EditEvent = () => {
     const fetchItem = async () => {
       if (!id || !moduleId || !subModuleId) { setLoadingItem(false); return; }
       try {
-        const res = await eventsService.portalGetOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+        const res = await eventsService.getOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
         if (res.success && res.data) {
           setItem(res.data);
           reset({
@@ -77,16 +77,16 @@ const EditEvent = () => {
       const promises: Promise<any>[] = [];
 
       if (data.title !== item.title || data.alt_text !== item.alt_text || data.type !== item.type || data.location !== (item.location || '') || data.link !== stripPrefix(item.link, 'https://')) {
-        promises.push(eventsService.portalEditDetails({ unique_id: id, title: data.title, alt_text: data.alt_text, type: data.type, ...(data.location && { location: data.location }), ...(data.link && { link: buildLink(data.link, 'https://') }) }, params));
+        promises.push(eventsService.editDetails({ unique_id: id, title: data.title, alt_text: data.alt_text, type: data.type, ...(data.location && { location: data.location }), ...(data.link && { link: buildLink(data.link, 'https://') }) }, params));
       }
       if (cleanDescription !== item.description) {
-        promises.push(eventsService.portalEditDescription({ unique_id: id, description: cleanDescription }, params));
+        promises.push(eventsService.editDescription({ unique_id: id, description: cleanDescription }, params));
       }
       if (data.start_date !== item.start_date || data.start_time !== item.start_time || data.end_date !== (item.end_date || '') || data.end_time !== (item.end_time || '')) {
-        promises.push(eventsService.portalEditTimeline({ unique_id: id, start_date: data.start_date, start_time: data.start_time, ...(data.end_date && { end_date: data.end_date }), ...(data.end_time && { end_time: data.end_time }) }, params));
+        promises.push(eventsService.editTimeline({ unique_id: id, start_date: data.start_date, start_time: data.start_time, ...(data.end_date && { end_date: data.end_date }), ...(data.end_time && { end_time: data.end_time }) }, params));
       }
       if (image !== (item.image || '') || imagePublicId !== (item.image_public_id || '')) {
-        promises.push(eventsService.portalEditImage({ unique_id: id, image, image_public_id: imagePublicId }, params));
+        promises.push(eventsService.editImage({ unique_id: id, image, image_public_id: imagePublicId }, params));
       }
 
       if (promises.length === 0) { setError('No changes detected'); showAlert('error-alert'); setLoading(false); return; }

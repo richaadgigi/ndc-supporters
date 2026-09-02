@@ -1,15 +1,17 @@
 ﻿'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Navbar } from '../../components/layout';
 import { ArrowLeft } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import categoriesService from '../../services/categories.service';
+import supportGroupsService from '../../services/supportGroups.service';
+import type { SupportGroup } from '../../services/supportGroups.service';
 import { Alert, showAlert } from '../../components/common';
 import { extractErrorMessage } from '../../utils/formatters';
 
-interface FormData { name: string; }
+interface FormData { support_group_unique_id: string; name: string; }
 
 const AddCategory = () => {
   const router = useRouter();
@@ -20,13 +22,35 @@ const AddCategory = () => {
 
   const accessIds = getAccessIds('supporter-portal', 'categories');
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ defaultValues: { name: '' } });
+
+
+  const [supportGroups, setSupportGroups] = useState<SupportGroup[]>([]);
+
+
+
+  useEffect(() => {
+
+
+    if (!accessIds) return;
+
+
+    supportGroupsService.getAll({ size: 500, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id })
+
+
+      .then(res => { if (res.success && res.data) setSupportGroups(Array.isArray(res.data) ? res.data : (res.data as any).rows || []); })
+
+
+      .catch(() => {});
+
+
+  }, [accessIds?.module_unique_id]);
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ defaultValues: { support_group_unique_id: '', name: '' } });
 
   const onSubmit = async (data: FormData) => {
     if (!accessIds) { setError('You do not have access to this module'); showAlert('error-alert'); return; }
     setLoading(true);
     try {
-      const response = await categoriesService.portalAdd({ name: data.name }, { module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id });
+      const response = await categoriesService.add({ support_group_unique_id: data.support_group_unique_id, name: data.name }, { module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id });
       if (response.success) {
         setSuccessMessage('Category added successfully'); showAlert('success-alert');
         setTimeout(() => router.push('/dashboard/supporter-portal/categories'), 1500);
@@ -44,6 +68,16 @@ const AddCategory = () => {
         <p className="xui-font-sz-[16px] xui-opacity-4">Enter the category name below.</p>
         <hr className="xui-my-2" />
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form" style={{ maxWidth: '500px' }}>
+          <div className="xui-form-box" {...(errors.support_group_unique_id && { 'xui-error': 'true' })}>
+            <label htmlFor="support_group_unique_id">Support Group *</label>
+            <select id="support_group_unique_id" {...register('support_group_unique_id', { required: 'Support group is required' })}>
+              <option value="">Select a support group</option>
+              {supportGroups.map(g => (
+                <option key={g.unique_id} value={g.unique_id}>{g.name}{g.state ? ` - ${g.state}` : ''}</option>
+              ))}
+            </select>
+            {errors.support_group_unique_id && <span className="message">{errors.support_group_unique_id.message}</span>}
+          </div>
           <div className="xui-form-box" {...(errors.name && { 'xui-error': 'true' })}>
             <label htmlFor="name">Name *</label>
             <input type="text" id="name" placeholder="e.g. Politics, Sports" {...register('name', { required: 'Name is required', minLength: { value: 3, message: 'Minimum 3 characters' }, maxLength: { value: 200, message: 'Maximum 200 characters' } })} />

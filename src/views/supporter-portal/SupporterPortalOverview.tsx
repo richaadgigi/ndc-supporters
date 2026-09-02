@@ -23,7 +23,7 @@ const SupporterPortalOverview = () => {
     if (!moduleId || !subModuleId) { setLoading(false); return; }
     setLoading(true); setError('');
     try {
-      const res = await analyticsService.getPortalSupportGroupPortalStats({ module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const res = await analyticsService.getSupportGroupPortalStats({ module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       if (res.success && res.data) setStats(res.data);
     } catch (err) {
       console.error('Failed to load portal stats:', err);

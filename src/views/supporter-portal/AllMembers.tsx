@@ -47,7 +47,7 @@ const AllMembers = () => {
   const fetchItems = useCallback(async () => {
     if (!moduleId || !subModuleId) { setFetchError('You do not have access to this module'); setLoading(false); return; }
     setLoading(true); setFetchError('');
-    try { handleResponse(await membersService.portalGetAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
+    try { handleResponse(await membersService.getAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch members')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
@@ -55,20 +55,20 @@ const AllMembers = () => {
     if (!moduleId || !subModuleId) return;
     if (!query.trim()) { fetchItems(); return; }
     setLoading(true); setFetchError('');
-    try { handleResponse(await membersService.portalSearch({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
+    try { handleResponse(await membersService.search({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to search members')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize, fetchItems]);
 
   const filterItems = useCallback(async (range: { start_date: string; end_date: string }) => {
     if (!moduleId || !subModuleId) return;
     setLoading(true); setFetchError('');
-    try { handleResponse(await membersService.portalFilter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
+    try { handleResponse(await membersService.filter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to filter members')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
   const handleDeleteItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to delete' };
-    return membersService.portalRemove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return membersService.remove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const hasActiveFilters = Object.values(filterValues).some((v) => v !== '');

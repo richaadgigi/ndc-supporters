@@ -32,7 +32,7 @@ const ViewEvent = () => {
     const fetchItem = async () => {
       if (!id || !moduleId || !subModuleId) { setLoading(false); return; }
       try {
-        const res = await eventsService.portalGetOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+        const res = await eventsService.getOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
         if (res.success && res.data) setItem(res.data);
       } catch (err) { } finally { setLoading(false); }
     };
@@ -41,7 +41,7 @@ const ViewEvent = () => {
 
   const handleApproveItem = async () => {
     if (!moduleId || !subModuleId || !item) return { success: false, message: 'Unable to approve' };
-    return eventsService.portalApprove({ unique_id: item.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return eventsService.approve({ unique_id: item.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const handleApproveSuccess = () => {

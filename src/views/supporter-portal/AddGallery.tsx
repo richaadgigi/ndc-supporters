@@ -1,15 +1,17 @@
 ﻿'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Navbar } from '../../components/layout';
 import { ArrowLeft, Close } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import galleryService from '../../services/gallery.service';
+import supportGroupsService from '../../services/supportGroups.service';
+import type { SupportGroup } from '../../services/supportGroups.service';
 import { Alert, showAlert, ImageUpload } from '../../components/common';
 import { extractErrorMessage } from '../../utils/formatters';
 
-interface FormData { title: string; tags: string[]; }
+interface FormData { support_group_unique_id: string; title: string; tags: string[]; }
 
 const AddGallery = () => {
   const router = useRouter();
@@ -23,7 +25,29 @@ const AddGallery = () => {
 
   const accessIds = getAccessIds('supporter-portal', 'gallery');
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({ defaultValues: { title: '', tags: [] } });
+
+
+  const [supportGroups, setSupportGroups] = useState<SupportGroup[]>([]);
+
+
+
+  useEffect(() => {
+
+
+    if (!accessIds) return;
+
+
+    supportGroupsService.getAll({ size: 500, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id })
+
+
+      .then(res => { if (res.success && res.data) setSupportGroups(Array.isArray(res.data) ? res.data : (res.data as any).rows || []); })
+
+
+      .catch(() => {});
+
+
+  }, [accessIds?.module_unique_id]);
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({ defaultValues: { support_group_unique_id: '', title: '', tags: [] } });
   const tags = watch('tags');
 
   const onSubmit = async (data: FormData) => {
@@ -31,8 +55,8 @@ const AddGallery = () => {
     if (!image) { setError('Image is required'); showAlert('error-alert'); return; }
     setLoading(true);
     try {
-      const response = await galleryService.portalAdd(
-        {
+      const response = await galleryService.add(
+        { support_group_unique_id: data.support_group_unique_id,
           ...(data.title && { title: data.title }),
           ...(data.tags.length > 0 && { tags: data.tags }),
           image,
@@ -57,6 +81,16 @@ const AddGallery = () => {
         <p className="xui-font-sz-[16px] xui-opacity-4">Fill in the gallery image details below. Image is required.</p>
         <hr className="xui-my-2" />
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form xui-max-w-[600px]">
+          <div className="xui-form-box" {...(errors.support_group_unique_id && { 'xui-error': 'true' })}>
+            <label htmlFor="support_group_unique_id">Support Group *</label>
+            <select id="support_group_unique_id" {...register('support_group_unique_id', { required: 'Support group is required' })}>
+              <option value="">Select a support group</option>
+              {supportGroups.map(g => (
+                <option key={g.unique_id} value={g.unique_id}>{g.name}{g.state ? ` - ${g.state}` : ''}</option>
+              ))}
+            </select>
+            {errors.support_group_unique_id && <span className="message">{errors.support_group_unique_id.message}</span>}
+          </div>
           <ImageUpload
             label="Image *"
             value={image}

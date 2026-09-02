@@ -9,10 +9,12 @@ import { useGeneral } from '../../context/GeneralContext';
 import postsService from '../../services/posts.service';
 import categoriesService from '../../services/categories.service';
 import type { Category } from '../../services/categories.service';
+import supportGroupsService from '../../services/supportGroups.service';
+import type { SupportGroup } from '../../services/supportGroups.service';
 import { Alert, showAlert, ImageUpload } from '../../components/common';
 import { extractErrorMessage, sanitizeHTML } from '../../utils/formatters';
 
-interface FormData { title: string; alt_text: string; category_unique_id: string; tags: string[]; }
+interface FormData { support_group_unique_id: string; title: string; alt_text: string; category_unique_id: string; tags: string[]; }
 
 const AddPost = () => {
   const router = useRouter();
@@ -28,14 +30,36 @@ const AddPost = () => {
 
   const accessIds = getAccessIds('supporter-portal', 'posts');
 
-  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<FormData>({ defaultValues: { title: '', alt_text: '', category_unique_id: '', tags: [] } });
+
+
+  const [supportGroups, setSupportGroups] = useState<SupportGroup[]>([]);
+
+
+
+  useEffect(() => {
+
+
+    if (!accessIds) return;
+
+
+    supportGroupsService.getAll({ size: 500, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id })
+
+
+      .then(res => { if (res.success && res.data) setSupportGroups(Array.isArray(res.data) ? res.data : (res.data as any).rows || []); })
+
+
+      .catch(() => {});
+
+
+  }, [accessIds?.module_unique_id]);
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<FormData>({ defaultValues: { support_group_unique_id: '', title: '', alt_text: '', category_unique_id: '', tags: [] } });
   const tags = watch('tags');
 
   useEffect(() => {
     if (!accessIds) { setCategories([]); return; }
     const fetchCategories = async () => {
       try {
-        const res = await categoriesService.portalGetAll({ size: 200, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id });
+        const res = await categoriesService.getAll({ size: 200, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id });
         if (res.success && res.data) setCategories(Array.isArray(res.data) ? res.data : (res.data as any).rows || []);
         else setCategories([]);
       } catch { setCategories([]); }
@@ -50,8 +74,8 @@ const AddPost = () => {
     const cleanDescription = sanitizeHTML(description);
     if (cleanDescription.length > 4294967295) { setError(`Description is too long. Maximum allowed is 4,294,967,295 characters.`); showAlert('error-alert'); setLoading(false); return; }
     try {
-      const response = await postsService.portalAdd(
-        {
+      const response = await postsService.add(
+        { support_group_unique_id: data.support_group_unique_id,
           title: data.title,
           ...(data.alt_text && { alt_text: data.alt_text }),
           description: cleanDescription,
@@ -63,7 +87,7 @@ const AddPost = () => {
       if (response.success) {
         if (data.category_unique_id && response.data?.unique_id) {
           try {
-            await postsService.portalEditCategory(
+            await postsService.editCategory(
               { unique_id: response.data.unique_id, category_unique_id: data.category_unique_id },
               { module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id }
             );
@@ -86,6 +110,16 @@ const AddPost = () => {
         <p className="xui-font-sz-[16px] xui-opacity-4">Fill in the post details below. Fields marked with * are required.</p>
         <hr className="xui-my-2" />
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form">
+          <div className="xui-form-box" {...(errors.support_group_unique_id && { 'xui-error': 'true' })}>
+            <label htmlFor="support_group_unique_id">Support Group *</label>
+            <select id="support_group_unique_id" {...register('support_group_unique_id', { required: 'Support group is required' })}>
+              <option value="">Select a support group</option>
+              {supportGroups.map(g => (
+                <option key={g.unique_id} value={g.unique_id}>{g.name}{g.state ? ` - ${g.state}` : ''}</option>
+              ))}
+            </select>
+            {errors.support_group_unique_id && <span className="message">{errors.support_group_unique_id.message}</span>}
+          </div>
           <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-2 xui-grid-gap-2">
             <div>
               <div className="xui-form-box" {...(errors.title && { 'xui-error': 'true' })}>

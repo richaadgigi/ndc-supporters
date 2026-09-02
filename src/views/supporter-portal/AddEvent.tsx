@@ -1,5 +1,5 @@
 ﻿'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import QuillEditor from '@/components/QuillEditor';
@@ -7,6 +7,8 @@ import { Navbar } from '../../components/layout';
 import { ArrowLeft } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import eventsService from '../../services/events.service';
+import supportGroupsService from '../../services/supportGroups.service';
+import type { SupportGroup } from '../../services/supportGroups.service';
 import { Alert, showAlert, ImageUpload } from '../../components/common';
 import { extractErrorMessage, sanitizeHTML } from '../../utils/formatters';
 
@@ -14,7 +16,7 @@ const buildLink = (value: string, prefix: string): string => {
   return value.startsWith(prefix) ? value : `${prefix}${value}`;
 };
 
-interface FormData { title: string; alt_text: string; type: string; start_date: string; start_time: string; end_date: string; end_time: string; location: string; link: string; }
+interface FormData { support_group_unique_id: string; title: string; alt_text: string; type: string; start_date: string; start_time: string; end_date: string; end_time: string; location: string; link: string; }
 
 const AddEvent = () => {
   const router = useRouter();
@@ -29,8 +31,30 @@ const AddEvent = () => {
 
   const accessIds = getAccessIds('supporter-portal', 'events');
 
+
+
+  const [supportGroups, setSupportGroups] = useState<SupportGroup[]>([]);
+
+
+
+  useEffect(() => {
+
+
+    if (!accessIds) return;
+
+
+    supportGroupsService.getAll({ size: 500, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id })
+
+
+      .then(res => { if (res.success && res.data) setSupportGroups(Array.isArray(res.data) ? res.data : (res.data as any).rows || []); })
+
+
+      .catch(() => {});
+
+
+  }, [accessIds?.module_unique_id]);
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    defaultValues: { title: '', alt_text: '', type: '', start_date: searchParams.get('date') || '', start_time: '', end_date: '', end_time: '', location: '', link: '' }
+    defaultValues: { support_group_unique_id: '', title: '', alt_text: '', type: '', start_date: searchParams.get('date') || '', start_time: '', end_date: '', end_time: '', location: '', link: '' }
   });
 
   const onSubmit = async (data: FormData) => {
@@ -40,8 +64,8 @@ const AddEvent = () => {
     const cleanDescription = sanitizeHTML(description);
     if (cleanDescription.length > 4294967295) { setError(`Description is too long (${cleanDescription.length.toLocaleString()} characters). Maximum allowed is 4,294,967,295 characters.`); showAlert('error-alert'); setLoading(false); return; }
     try {
-      const response = await eventsService.portalAdd(
-        {
+      const response = await eventsService.add(
+        { support_group_unique_id: data.support_group_unique_id,
           title: data.title, alt_text: data.alt_text, type: data.type, description: cleanDescription,
           start_date: data.start_date, start_time: data.start_time,
           ...(data.end_date && { end_date: data.end_date }),
@@ -69,6 +93,16 @@ const AddEvent = () => {
         <p className="xui-font-sz-[16px] xui-opacity-4">Fill in the event details below. Fields marked with * are required.</p>
         <hr className="xui-my-2" />
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form">
+          <div className="xui-form-box" {...(errors.support_group_unique_id && { 'xui-error': 'true' })}>
+            <label htmlFor="support_group_unique_id">Support Group *</label>
+            <select id="support_group_unique_id" {...register('support_group_unique_id', { required: 'Support group is required' })}>
+              <option value="">Select a support group</option>
+              {supportGroups.map(g => (
+                <option key={g.unique_id} value={g.unique_id}>{g.name}{g.state ? ` - ${g.state}` : ''}</option>
+              ))}
+            </select>
+            {errors.support_group_unique_id && <span className="message">{errors.support_group_unique_id.message}</span>}
+          </div>
           <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-2 xui-grid-gap-2">
             <div>
               <div className="xui-form-box" {...(errors.title && { 'xui-error': 'true' })}>

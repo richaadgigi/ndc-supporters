@@ -47,7 +47,7 @@ const AllFileStorage = () => {
   const fetchItems = useCallback(async () => {
     if (!moduleId || !subModuleId) { setFetchError('You do not have access to this module'); setLoading(false); return; }
     setLoading(true); setFetchError('');
-    try { handleResponse(await fileStorageService.portalGetAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
+    try { handleResponse(await fileStorageService.getAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch files')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
@@ -55,20 +55,20 @@ const AllFileStorage = () => {
     if (!moduleId || !subModuleId) return;
     if (!query.trim()) { fetchItems(); return; }
     setLoading(true); setFetchError('');
-    try { handleResponse(await fileStorageService.portalSearch({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
+    try { handleResponse(await fileStorageService.search({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to search files')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize, fetchItems]);
 
   const filterItems = useCallback(async (range: { start_date: string; end_date: string }) => {
     if (!moduleId || !subModuleId) return;
     setLoading(true); setFetchError('');
-    try { handleResponse(await fileStorageService.portalFilter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
+    try { handleResponse(await fileStorageService.filter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to filter files')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
   const handleDeleteItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to delete' };
-    return fileStorageService.portalRemove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return fileStorageService.remove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const hasActiveFilters = Object.values(filterValues).some((v) => v !== '');

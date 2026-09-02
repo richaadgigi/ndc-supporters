@@ -143,6 +143,8 @@ const subModulePaths: Record<string, string> = {
   'users': '/users',
 };
 
+const HIDDEN_SUB_MODULES: string[] = ['support-group-profile'];
+
 const moduleGroups: Record<string, string> = {
   'supporter-portal': 'Support Group',
   'supporter': 'Administration',
@@ -212,7 +214,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
         const basePath = modulePaths[module.moduleStripped] || `/dashboard/${module.moduleStripped}`;
         const moduleIcon = moduleIcons[module.moduleStripped] || <Folder size={20} />;
 
-        const children: NavItem[] = module.subModules.map((subModule) => {
+        const children: NavItem[] = module.subModules.filter((subModule) => !HIDDEN_SUB_MODULES.includes(subModule.stripped)).map((subModule) => {
           const subPath = subModulePaths[subModule.stripped] ?? `/${subModule.stripped}`;
           const subIcon = subModuleIcons[subModule.stripped] || <Document size={16} />;
           return {

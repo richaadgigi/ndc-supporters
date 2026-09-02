@@ -53,7 +53,7 @@ const AllNewsletter = () => {
     if (!moduleId || !subModuleId) { setFetchError('You do not have access to this module'); setLoading(false); return; }
     setLoading(true); setFetchError('');
     try {
-      const response = await newsletterService.portalGetAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await newsletterService.getAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch newsletter subscribers')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
@@ -62,14 +62,14 @@ const AllNewsletter = () => {
     if (!moduleId || !subModuleId) return;
     setLoading(true); setFetchError('');
     try {
-      const response = await newsletterService.portalFilter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await newsletterService.filter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to filter newsletter subscribers')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
   const handleDeleteItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to delete subscriber' };
-    return newsletterService.portalRemove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return newsletterService.remove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const hasActiveFilters = Object.values(filterValues).some((v) => v !== '');
@@ -90,7 +90,7 @@ const AllNewsletter = () => {
   useEffect(() => {
     if (!moduleId || !subModuleId) return;
 
-    newsletterService.portalGetStats({ module_unique_id: moduleId, sub_module_unique_id: subModuleId })
+    newsletterService.getStats({ module_unique_id: moduleId, sub_module_unique_id: subModuleId })
       .then(res => { if (res.success && res.data) setStatsData(res.data); })
       .catch(err => console.error('Failed to load stats:', err));
 

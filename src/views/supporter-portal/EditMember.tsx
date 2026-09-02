@@ -28,7 +28,7 @@ const EditMember = () => {
     if (!id || !moduleId) return;
     setLoading(true); setFetchError('');
     try {
-      const response = await membersService.portalGetOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await membersService.getOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       if (response.success && response.data) setMember(response.data);
       else setFetchError(response.message || 'Failed to load member');
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to load member')); } finally { setLoading(false); }

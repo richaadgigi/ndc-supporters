@@ -1,15 +1,17 @@
 ﻿'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Navbar } from '../../components/layout';
 import { ArrowLeft } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import faqsService from '../../services/faqs.service';
+import supportGroupsService from '../../services/supportGroups.service';
+import type { SupportGroup } from '../../services/supportGroups.service';
 import { Alert, showAlert } from '../../components/common';
 import { extractErrorMessage } from '../../utils/formatters';
 
-interface FormData { question: string; answer: string; }
+interface FormData { support_group_unique_id: string; question: string; answer: string; }
 
 const AddFaq = () => {
   const router = useRouter();
@@ -20,13 +22,35 @@ const AddFaq = () => {
 
   const accessIds = getAccessIds('supporter-portal', 'faqs');
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ defaultValues: { question: '', answer: '' } });
+
+
+  const [supportGroups, setSupportGroups] = useState<SupportGroup[]>([]);
+
+
+
+  useEffect(() => {
+
+
+    if (!accessIds) return;
+
+
+    supportGroupsService.getAll({ size: 500, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id })
+
+
+      .then(res => { if (res.success && res.data) setSupportGroups(Array.isArray(res.data) ? res.data : (res.data as any).rows || []); })
+
+
+      .catch(() => {});
+
+
+  }, [accessIds?.module_unique_id]);
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ defaultValues: { support_group_unique_id: '', question: '', answer: '' } });
 
   const onSubmit = async (data: FormData) => {
     if (!accessIds) { setError('You do not have access to this module'); showAlert('error-alert'); return; }
     setLoading(true);
     try {
-      const response = await faqsService.portalAdd({ question: data.question, answer: data.answer }, { module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id });
+      const response = await faqsService.add({ support_group_unique_id: data.support_group_unique_id, question: data.question, answer: data.answer }, { module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id });
       if (response.success) {
         setSuccessMessage('FAQ added successfully'); showAlert('success-alert');
         setTimeout(() => router.push('/dashboard/supporter-portal/faqs'), 1500);
@@ -44,6 +68,16 @@ const AddFaq = () => {
         <p className="xui-font-sz-[16px] xui-opacity-4">Fill in the FAQ details below.</p>
         <hr className="xui-my-2" />
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form" style={{ maxWidth: '600px' }}>
+          <div className="xui-form-box" {...(errors.support_group_unique_id && { 'xui-error': 'true' })}>
+            <label htmlFor="support_group_unique_id">Support Group *</label>
+            <select id="support_group_unique_id" {...register('support_group_unique_id', { required: 'Support group is required' })}>
+              <option value="">Select a support group</option>
+              {supportGroups.map(g => (
+                <option key={g.unique_id} value={g.unique_id}>{g.name}{g.state ? ` - ${g.state}` : ''}</option>
+              ))}
+            </select>
+            {errors.support_group_unique_id && <span className="message">{errors.support_group_unique_id.message}</span>}
+          </div>
           <div className="xui-form-box" {...(errors.question && { 'xui-error': 'true' })}>
             <label htmlFor="question">Question *</label>
             <input type="text" id="question" placeholder="Enter the question" {...register('question', { required: 'Question is required', maxLength: { value: 300, message: 'Maximum 300 characters' } })} />

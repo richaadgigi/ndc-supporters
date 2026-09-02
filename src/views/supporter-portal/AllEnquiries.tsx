@@ -57,7 +57,7 @@ const AllEnquiries = () => {
     if (!moduleId || !subModuleId) { setFetchError('You do not have access to this module'); setLoading(false); return; }
     setLoading(true); setFetchError('');
     try {
-      const response = await enquiriesService.portalGetAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await enquiriesService.getAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch enquiries')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
@@ -66,19 +66,19 @@ const AllEnquiries = () => {
     if (!moduleId || !subModuleId) return;
     setLoading(true); setFetchError('');
     try {
-      const response = await enquiriesService.portalFilter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await enquiriesService.filter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to filter enquiries')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
   const handleDeleteItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to delete enquiry' };
-    return enquiriesService.portalRemove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return enquiriesService.remove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const handleMarkComplete = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to mark enquiry as completed' };
-    return enquiriesService.portalComplete({ unique_id: selectedItem.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return enquiriesService.complete({ unique_id: selectedItem.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const hasActiveFilters = Object.values(filterValues).some((v) => v !== '');
@@ -99,7 +99,7 @@ const AllEnquiries = () => {
   useEffect(() => {
     if (!moduleId || !subModuleId) return;
 
-    enquiriesService.portalGetStats({ module_unique_id: moduleId, sub_module_unique_id: subModuleId })
+    enquiriesService.getStats({ module_unique_id: moduleId, sub_module_unique_id: subModuleId })
       .then(res => { if (res.success && res.data) setStatsData(res.data); })
       .catch(err => console.error('Failed to load stats:', err));
 

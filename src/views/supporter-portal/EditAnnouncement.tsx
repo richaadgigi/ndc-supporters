@@ -39,7 +39,7 @@ const EditAnnouncement = () => {
       if (!id || !moduleId || !subModuleId) { setLoadingItem(false); return; }
       const parseDate = (d: string | null) => d ? d.split('T')[0].split(' ')[0] : '';
       try {
-        const res = await announcementsService.portalGetOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+        const res = await announcementsService.getOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
         if (res.success && res.data) {
           setItem(res.data);
           reset({ title: res.data.title, start_date: parseDate(res.data.start_date), end_date: parseDate(res.data.end_date) });
@@ -57,11 +57,11 @@ const EditAnnouncement = () => {
     const params = { module_unique_id: moduleId, sub_module_unique_id: subModuleId };
     const cleanDescription = description && description !== '<p><br></p>' ? sanitizeHTML(description) : '';
     try {
-      const detailsRes = await announcementsService.portalEditDetails({ unique_id: id, title: data.title }, params);
+      const detailsRes = await announcementsService.editDetails({ unique_id: id, title: data.title }, params);
       if (!detailsRes.success) { setError(detailsRes.message || 'Failed to update announcement'); showAlert('error-alert'); return; }
 
       if (cleanDescription) {
-        const descRes = await announcementsService.portalEditDescription({ unique_id: id, description: cleanDescription }, params);
+        const descRes = await announcementsService.editDescription({ unique_id: id, description: cleanDescription }, params);
         if (!descRes.success) { setError(descRes.message || 'Failed to update description'); showAlert('error-alert'); return; }
       }
 
@@ -69,7 +69,7 @@ const EditAnnouncement = () => {
         const timelinePayload: Record<string, any> = { unique_id: id };
         if (data.start_date) timelinePayload.start_date = `${data.start_date} 00:00`;
         if (data.end_date) timelinePayload.end_date = `${data.end_date} 00:00`;
-        const timelineRes = await announcementsService.portalEditTimeline(timelinePayload, params);
+        const timelineRes = await announcementsService.editTimeline(timelinePayload, params);
         if (!timelineRes.success) { setError(timelineRes.message || 'Failed to update timeline'); showAlert('error-alert'); return; }
       }
 
@@ -80,7 +80,7 @@ const EditAnnouncement = () => {
 
   const handleApproveConfirm = async (): Promise<{ success: boolean; message: string }> => {
     if (!moduleId || !subModuleId || !id) return { success: false, message: 'Missing access information' };
-    const response = await announcementsService.portalApprove({ unique_id: id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    const response = await announcementsService.approve({ unique_id: id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
     if (response.success) setItem(prev => prev ? { ...prev, approved_by: 'approved', status: 1 } : prev);
     return response;
   };

@@ -56,7 +56,7 @@ const AllAnnouncements = () => {
     if (!moduleId || !subModuleId) { setFetchError('You do not have access to this module'); setLoading(false); return; }
     setLoading(true); setFetchError('');
     try {
-      const response = await announcementsService.portalGetAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await announcementsService.getAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch announcements')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
@@ -66,7 +66,7 @@ const AllAnnouncements = () => {
     if (!query.trim()) { fetchItems(); return; }
     setLoading(true); setFetchError('');
     try {
-      const response = await announcementsService.portalSearch({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await announcementsService.search({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to search announcements')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize, fetchItems]);
@@ -75,19 +75,19 @@ const AllAnnouncements = () => {
     if (!moduleId || !subModuleId) return;
     setLoading(true); setFetchError('');
     try {
-      const response = await announcementsService.portalFilter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await announcementsService.filter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to filter announcements')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
   const handleApproveItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to approve announcement' };
-    return announcementsService.portalApprove({ unique_id: selectedItem.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return announcementsService.approve({ unique_id: selectedItem.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const handleDeleteItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to delete announcement' };
-    return announcementsService.portalRemove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return announcementsService.remove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const hasActiveFilters = Object.values(filterValues).some((v) => v !== '');

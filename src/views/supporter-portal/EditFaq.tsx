@@ -33,7 +33,7 @@ const EditFaq = () => {
     const fetchItem = async () => {
       if (!id || !moduleId || !subModuleId) { setLoadingItem(false); return; }
       try {
-        const res = await faqsService.portalGetOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+        const res = await faqsService.getOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
         if (res.success && res.data) { setItem(res.data); reset({ question: res.data.question, answer: res.data.answer }); }
       } catch (err) { console.error('Failed to fetch FAQ:', err); setError('Failed to load FAQ details'); showAlert('error-alert'); } finally { setLoadingItem(false); }
     };
@@ -44,7 +44,7 @@ const EditFaq = () => {
     if (!moduleId || !subModuleId || !id) { setError('You do not have access to this module'); showAlert('error-alert'); return; }
     setLoading(true); setError('');
     try {
-      const response = await faqsService.portalEditDetails({ unique_id: id, question: data.question, answer: data.answer }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await faqsService.editDetails({ unique_id: id, question: data.question, answer: data.answer }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       if (response.success) {
         setSuccessMessage('FAQ updated successfully'); showAlert('success-alert');
         setTimeout(() => router.push('/dashboard/supporter-portal/faqs'), 1500);

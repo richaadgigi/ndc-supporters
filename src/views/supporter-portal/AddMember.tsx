@@ -8,10 +8,12 @@ import { useGeneral } from '../../context/GeneralContext';
 import membersService from '../../services/members.service';
 import memberRolesService from '../../services/memberRoles.service';
 import type { MemberRole } from '../../services/memberRoles.service';
+import supportGroupsService from '../../services/supportGroups.service';
+import type { SupportGroup } from '../../services/supportGroups.service';
 import { Alert, showAlert } from '../../components/common';
 import { extractErrorMessage } from '../../utils/formatters';
 
-interface FormData {
+interface FormData { support_group_unique_id: string;
   firstname: string;
   middlename: string;
   lastname: string;
@@ -26,7 +28,7 @@ interface FormData {
 
 const AddMember = () => {
   const router = useRouter();
-  const { getAccessIds, supportGroupId } = useGeneral();
+  const { getAccessIds } = useGeneral();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -34,8 +36,30 @@ const AddMember = () => {
 
   const accessIds = getAccessIds('supporter-portal', 'members');
 
+
+
+  const [supportGroups, setSupportGroups] = useState<SupportGroup[]>([]);
+
+
+
+  useEffect(() => {
+
+
+    if (!accessIds) return;
+
+
+    supportGroupsService.getAll({ size: 500, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id })
+
+
+      .then(res => { if (res.success && res.data) setSupportGroups(Array.isArray(res.data) ? res.data : (res.data as any).rows || []); })
+
+
+      .catch(() => {});
+
+
+  }, [accessIds?.module_unique_id]);
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    defaultValues: { firstname: '', middlename: '', lastname: '', email: '', phone_number: '', gender: '', date_of_birth: '', nin: '', code: '', member_role_unique_id: '' },
+    defaultValues: { support_group_unique_id: '', firstname: '', middlename: '', lastname: '', email: '', phone_number: '', gender: '', date_of_birth: '', nin: '', code: '', member_role_unique_id: '' },
   });
 
   useEffect(() => {
@@ -45,17 +69,14 @@ const AddMember = () => {
   }, []);
 
   const onSubmit = async (data: FormData) => {
-    if (!accessIds) { setError('You do not have access to this module'); showAlert('error-alert'); return; }
-    if (!supportGroupId) { setError('No support group is bound to your session'); showAlert('error-alert'); return; }
-    setLoading(true);
+    if (!accessIds) { setError('You do not have access to this module'); showAlert('error-alert'); return; }    setLoading(true);
     try {
-      const response = await membersService.portalAdd(
-        {
+      const response = await membersService.add(
+        { support_group_unique_id: data.support_group_unique_id,
           firstname: data.firstname,
           lastname: data.lastname,
           email: data.email,
           member_role_unique_id: data.member_role_unique_id,
-          support_group_unique_id: supportGroupId,
           code: data.code,
           ...(data.middlename && { middlename: data.middlename }),
           ...(data.phone_number && { phone_number: data.phone_number }),
@@ -82,6 +103,16 @@ const AddMember = () => {
         <p className="xui-font-sz-[16px] xui-opacity-4">Fill in the member details below. Fields marked with * are required.</p>
         <hr className="xui-my-2" />
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form">
+          <div className="xui-form-box" {...(errors.support_group_unique_id && { 'xui-error': 'true' })}>
+            <label htmlFor="support_group_unique_id">Support Group *</label>
+            <select id="support_group_unique_id" {...register('support_group_unique_id', { required: 'Support group is required' })}>
+              <option value="">Select a support group</option>
+              {supportGroups.map(g => (
+                <option key={g.unique_id} value={g.unique_id}>{g.name}{g.state ? ` - ${g.state}` : ''}</option>
+              ))}
+            </select>
+            {errors.support_group_unique_id && <span className="message">{errors.support_group_unique_id.message}</span>}
+          </div>
           <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-2 xui-grid-gap-2">
             <div>
               <div className="xui-form-box" {...(errors.member_role_unique_id && { 'xui-error': 'true' })}>

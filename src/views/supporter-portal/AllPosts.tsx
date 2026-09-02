@@ -57,7 +57,7 @@ const AllPosts = () => {
     if (!moduleId || !subModuleId) { setFetchError('You do not have access to this module'); setLoading(false); return; }
     setLoading(true); setFetchError('');
     try {
-      const response = await postsService.portalGetAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) });
+      const response = await postsService.getAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch posts')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
@@ -67,7 +67,7 @@ const AllPosts = () => {
     if (!query.trim()) { fetchItems(); return; }
     setLoading(true); setFetchError('');
     try {
-      const response = await postsService.portalSearch({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) });
+      const response = await postsService.search({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to search posts')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize, fetchItems]);
@@ -76,19 +76,19 @@ const AllPosts = () => {
     if (!moduleId || !subModuleId) return;
     setLoading(true); setFetchError('');
     try {
-      const response = await postsService.portalFilter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) });
+      const response = await postsService.filter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to filter posts')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
   const handleApproveItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to approve post' };
-    return postsService.portalApprove({ unique_id: selectedItem.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return postsService.approve({ unique_id: selectedItem.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const handleDeleteItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to delete post' };
-    return postsService.portalRemove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return postsService.remove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const hasActiveFilters = Object.values(filterValues).some((v) => v !== '');

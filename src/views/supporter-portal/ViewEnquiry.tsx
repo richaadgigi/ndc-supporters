@@ -31,7 +31,7 @@ const ViewEnquiry = () => {
   const fetchItem = async () => {
     if (!id || !moduleId || !subModuleId) { setLoading(false); return; }
     try {
-      const res = await enquiriesService.portalGetOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const res = await enquiriesService.getOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       if (res.success && res.data) setItem(res.data);
     } catch (err) { } finally { setLoading(false); }
   };
@@ -42,7 +42,7 @@ const ViewEnquiry = () => {
 
   const handleMarkComplete = async () => {
     if (!moduleId || !subModuleId || !item) return { success: false, message: 'Unable to mark enquiry as completed' };
-    return enquiriesService.portalComplete({ unique_id: item.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return enquiriesService.complete({ unique_id: item.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const handleMarkCompleteSuccess = () => {

@@ -48,7 +48,7 @@ const AllGallery = () => {
   const fetchItems = useCallback(async () => {
     if (!moduleId || !subModuleId) { setFetchError('You do not have access to this module'); setLoading(false); return; }
     setLoading(true); setFetchError('');
-    try { handleResponse(await galleryService.portalGetAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) })); }
+    try { handleResponse(await galleryService.getAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch gallery')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
@@ -56,20 +56,20 @@ const AllGallery = () => {
     if (!moduleId || !subModuleId) return;
     if (!query.trim()) { fetchItems(); return; }
     setLoading(true); setFetchError('');
-    try { handleResponse(await galleryService.portalSearch({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) })); }
+    try { handleResponse(await galleryService.search({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to search gallery')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize, fetchItems]);
 
   const filterItems = useCallback(async (range: { start_date: string; end_date: string }) => {
     if (!moduleId || !subModuleId) return;
     setLoading(true); setFetchError('');
-    try { handleResponse(await galleryService.portalFilter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) })); }
+    try { handleResponse(await galleryService.filter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(tagRef.current && { tags: tagRef.current }) })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to filter gallery')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
   const handleDeleteItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to delete' };
-    return galleryService.portalRemove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return galleryService.remove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const hasActiveFilters = Object.values(filterValues).some((v) => v !== '');

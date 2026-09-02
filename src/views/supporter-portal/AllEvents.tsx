@@ -97,7 +97,7 @@ const AllEvents = () => {
   const fetchItems = useCallback(async () => {
     if (!moduleId || !subModuleId) { setFetchError('You do not have access to this module'); setLoading(false); return; }
     setLoading(true); setFetchError('');
-    try { handleResponse(await eventsService.portalGetAll({ page: 1, size: 500, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
+    try { handleResponse(await eventsService.getAll({ page: 1, size: 500, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); }
     catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch events')); }
     finally { setLoading(false); }
   }, [moduleId, subModuleId]);
@@ -132,12 +132,12 @@ const AllEvents = () => {
 
   const handleDelete = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to delete' };
-    return eventsService.portalRemove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return eventsService.remove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const handleApprove = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to approve' };
-    return eventsService.portalApprove({ unique_id: selectedItem.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return eventsService.approve({ unique_id: selectedItem.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   return (

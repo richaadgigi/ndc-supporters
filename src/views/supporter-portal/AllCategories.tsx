@@ -56,7 +56,7 @@ const AllCategories = () => {
     if (!moduleId || !subModuleId) { setFetchError('You do not have access to this module'); setLoading(false); return; }
     setLoading(true); setFetchError('');
     try {
-      const response = await categoriesService.portalGetAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await categoriesService.getAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch categories')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
@@ -66,7 +66,7 @@ const AllCategories = () => {
     if (!query.trim()) { fetchItems(); return; }
     setLoading(true); setFetchError('');
     try {
-      const response = await categoriesService.portalSearch({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await categoriesService.search({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to search categories')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize, fetchItems]);
@@ -75,19 +75,19 @@ const AllCategories = () => {
     if (!moduleId || !subModuleId) return;
     setLoading(true); setFetchError('');
     try {
-      const response = await categoriesService.portalFilter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await categoriesService.filter({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to filter categories')); } finally { setLoading(false); }
   }, [moduleId, subModuleId, currentPage, pageSize]);
 
   const handleDeleteItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to delete category' };
-    return categoriesService.portalRemove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return categoriesService.remove(selectedItem.unique_id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const handleApproveItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to approve category' };
-    return categoriesService.portalApprove({ unique_id: selectedItem.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    return categoriesService.approve({ unique_id: selectedItem.unique_id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
   };
 
   const hasActiveFilters = Object.values(filterValues).some((v) => v !== '');

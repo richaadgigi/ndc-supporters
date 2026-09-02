@@ -1,15 +1,17 @@
 ﻿'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Navbar } from '../../components/layout';
 import { ArrowLeft } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import fileStorageService from '../../services/fileStorage.service';
+import supportGroupsService from '../../services/supportGroups.service';
+import type { SupportGroup } from '../../services/supportGroups.service';
 import { Alert, showAlert, FileUpload } from '../../components/common';
 import { extractErrorMessage } from '../../utils/formatters';
 
-interface FormData { title: string; }
+interface FormData { support_group_unique_id: string; title: string; }
 
 const AddFileStorage = () => {
   const router = useRouter();
@@ -23,15 +25,37 @@ const AddFileStorage = () => {
 
   const accessIds = getAccessIds('supporter-portal', 'file-storage');
 
-  const { register, handleSubmit } = useForm<FormData>({ defaultValues: { title: '' } });
+
+
+  const [supportGroups, setSupportGroups] = useState<SupportGroup[]>([]);
+
+
+
+  useEffect(() => {
+
+
+    if (!accessIds) return;
+
+
+    supportGroupsService.getAll({ size: 500, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id })
+
+
+      .then(res => { if (res.success && res.data) setSupportGroups(Array.isArray(res.data) ? res.data : (res.data as any).rows || []); })
+
+
+      .catch(() => {});
+
+
+  }, [accessIds?.module_unique_id]);
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ defaultValues: { support_group_unique_id: '', title: '' } });
 
   const onSubmit = async (data: FormData) => {
     if (!accessIds) { setError('You do not have access to this module'); showAlert('error-alert'); return; }
     if (!file) { setError('Please upload a file'); showAlert('error-alert'); return; }
     setLoading(true);
     try {
-      const response = await fileStorageService.portalAdd(
-        { file, file_type: fileType, file_public_id: filePublicId, ...(data.title && { title: data.title }) },
+      const response = await fileStorageService.add(
+        { support_group_unique_id: data.support_group_unique_id, file, file_type: fileType, file_public_id: filePublicId, ...(data.title && { title: data.title }) },
         { module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id }
       );
       if (response.success) {
@@ -51,6 +75,16 @@ const AddFileStorage = () => {
         <p className="xui-font-sz-[16px] xui-opacity-4">Upload a file and optionally give it a title.</p>
         <hr className="xui-my-2" />
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form" style={{ maxWidth: '500px' }}>
+          <div className="xui-form-box" {...(errors.support_group_unique_id && { 'xui-error': 'true' })}>
+            <label htmlFor="support_group_unique_id">Support Group *</label>
+            <select id="support_group_unique_id" {...register('support_group_unique_id', { required: 'Support group is required' })}>
+              <option value="">Select a support group</option>
+              {supportGroups.map(g => (
+                <option key={g.unique_id} value={g.unique_id}>{g.name}{g.state ? ` - ${g.state}` : ''}</option>
+              ))}
+            </select>
+            {errors.support_group_unique_id && <span className="message">{errors.support_group_unique_id.message}</span>}
+          </div>
           <div className="xui-form-box">
             <label htmlFor="title">Title (optional)</label>
             <input type="text" id="title" placeholder="Enter file title" {...register('title')} />

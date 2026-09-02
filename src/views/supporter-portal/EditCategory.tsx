@@ -35,7 +35,7 @@ const EditCategory = () => {
     const fetchItem = async () => {
       if (!id || !moduleId || !subModuleId) { setLoadingItem(false); return; }
       try {
-        const res = await categoriesService.portalGetOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+        const res = await categoriesService.getOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
         if (res.success && res.data) { setItem(res.data); reset({ name: res.data.name }); }
       } catch { setError('Failed to load category details'); showAlert('error-alert'); } finally { setLoadingItem(false); }
     };
@@ -46,7 +46,7 @@ const EditCategory = () => {
     if (!moduleId || !subModuleId || !id) { setError('You do not have access to this module'); showAlert('error-alert'); return; }
     setLoading(true); setError('');
     try {
-      const response = await categoriesService.portalEditDetails({ unique_id: id, name: data.name }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+      const response = await categoriesService.editDetails({ unique_id: id, name: data.name }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
       if (response.success) {
         setSuccessMessage('Category updated successfully'); showAlert('success-alert');
         setTimeout(() => router.push('/dashboard/supporter-portal/categories'), 1500);
@@ -56,7 +56,7 @@ const EditCategory = () => {
 
   const handleApproveConfirm = async (): Promise<{ success: boolean; message: string }> => {
     if (!moduleId || !subModuleId || !id) return { success: false, message: 'Missing access information' };
-    const response = await categoriesService.portalApprove({ unique_id: id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+    const response = await categoriesService.approve({ unique_id: id }, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
     if (response.success) setItem(prev => prev ? { ...prev, approved_by: 'approved', status: 1 } : prev);
     return response;
   };
