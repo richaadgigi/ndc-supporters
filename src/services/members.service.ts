@@ -80,6 +80,11 @@ const membersService = {
     return response.data;
   },
 
+  editRole: async (data: { unique_id: string; member_role_unique_id: string }, params: Omit<PaginationParams, 'page' | 'size'>): Promise<{ success: boolean; message: string }> => {
+    const response = await api.put(`/user/member/role?${buildQueryParams(params)}`, data);
+    return response.data;
+  },
+
   portalGetAll: async (params: PaginationParams): Promise<MembersResponse> => {
     const response = await api.get(`/portal/team/members?${buildQueryParams(params)}`);
     return response.data;

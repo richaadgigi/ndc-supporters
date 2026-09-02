@@ -207,7 +207,6 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
       Object.values(aclsByModule).forEach((module) => {
         const groupName = moduleGroups[module.moduleStripped] || 'Support Group';
 
-        if (userType === 'admin' && groupName === 'Support Group') return;
         if (userType === 'portal' && groupName === 'Administration') return;
 
         const basePath = modulePaths[module.moduleStripped] || `/dashboard/${module.moduleStripped}`;

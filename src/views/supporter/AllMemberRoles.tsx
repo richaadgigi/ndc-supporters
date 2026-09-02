@@ -35,6 +35,7 @@ const AllMemberRoles = () => {
   const canAdd = accessResult.accessTypes.includes('add');
   const canEdit = accessResult.accessTypes.includes('edit');
   const canDelete = accessResult.accessTypes.includes('delete');
+  const canExport = accessResult.accessTypes.includes('elevated_role');
 
   const handleResponse = (response: any) => { if (response.success && response.data) { if (Array.isArray(response.data)) { setItems(response.data); setTotalPages(1); } else { setItems(response.data.rows || []); setTotalPages(response.data.pages || 1); } } else { setItems([]); } };
   const fetchItems = useCallback(async () => { if (!moduleId || !subModuleId) { setFetchError('You do not have access'); setLoading(false); return; } setLoading(true); setFetchError(''); try { handleResponse(await memberRolesService.getAll({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId })); } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch member roles')); } finally { setLoading(false); } }, [moduleId, subModuleId, currentPage, pageSize]);
@@ -66,7 +67,9 @@ const AllMemberRoles = () => {
         <div className="xui-d-flex xui-flex-ai-center xui-flex-jc-space-between xui-mb-1-half">
           <div className="xui-d-flex xui-flex-ai-center xui-grid-gap-1"><SearchInput placeholder="Search member roles..." value={searchQuery} onChange={handleSearchChange} onSearch={handleSearch} width="300px" /><FilterModal id="member-roles" fields={filterFields} values={filterValues} onApply={handleApplyFilters} onClear={handleClearFilters} /></div>
           <div className="xui-d-flex xui-flex-ai-center xui-grid-gap-half">
-            <button onClick={() => modalShow('export-modal')} className="xui-btn xui-btn-text xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)' }} disabled={loading || items.length === 0}><span className="icon-container"><Download size={16} /></span> Export</button>
+            {canExport && (
+              <button onClick={() => modalShow('export-modal')} className="xui-btn xui-btn-text xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)' }} disabled={loading || items.length === 0}><span className="icon-container"><Download size={16} /></span> Export</button>
+            )}
             <button onClick={handleRefresh} className="xui-btn xui-btn-text xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)' }} disabled={loading}><span className="icon-container"><Renew size={16} /></span> Refresh</button>
             {canAdd && (<button onClick={() => router.push('/dashboard/supporter/member-roles/add')} className="xui-btn xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ backgroundColor: 'var(--primary-600)', color: 'var(--secondary-700)' }}><span className="icon-container"><Add size={16} /></span> Add Member Role</button>)}
           </div>

@@ -37,6 +37,7 @@ const AllSupportGroups = () => {
   const accessResult = moduleId ? checkAccess(moduleId, subModuleId) : { hasAccess: false, accessTypes: [] };
   const canAdd = accessResult.accessTypes.includes('add');
   const canEdit = accessResult.accessTypes.includes('edit');
+  const canExport = accessResult.accessTypes.includes('elevated_role');
   const canAutoApprove = canEdit && accessResult.accessTypes.includes('elevated_role');
 
   const pendingIds = items.filter(i => i.support_group_status === 'Pending').map(i => i.unique_id);
@@ -140,7 +141,9 @@ const AllSupportGroups = () => {
           <div className="xui-d-flex xui-flex-ai-center" style={{ gap: '6px', flexShrink: 0 }}>
             {canEdit && selectedIds.length > 0 && <button onClick={() => { setSelectedItem(null); setConfirmAction('approveSelected'); modalShow('action-modal'); }} className="xui-btn xui-font-sz-75 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ backgroundColor: 'var(--success-light)', color: 'var(--success)', border: 'none', whiteSpace: 'nowrap', padding: '6px 10px' }} disabled={loading}><span className="icon-container"><Checkmark size={14} /></span> Approve ({selectedIds.length})</button>}
             {canAutoApprove && <button onClick={() => { setSelectedItem(null); setConfirmAction('autoApprove'); modalShow('action-modal'); }} className="xui-btn xui-font-sz-75 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ backgroundColor: 'var(--success)', color: '#fff', border: 'none', whiteSpace: 'nowrap', padding: '6px 10px' }} disabled={loading || pendingIds.length === 0}><span className="icon-container"><Checkmark size={14} /></span> Auto-Approve</button>}
-            <button onClick={() => modalShow('export-modal')} className="xui-btn xui-btn-text xui-font-sz-75 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center" style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)', padding: '6px 10px' }} disabled={loading || items.length === 0} title="Export current page"><span className="icon-container"><Download size={14} /></span></button>
+            {canExport && (
+              <button onClick={() => modalShow('export-modal')} className="xui-btn xui-btn-text xui-font-sz-75 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center" style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)', padding: '6px 10px' }} disabled={loading || items.length === 0} title="Export current page"><span className="icon-container"><Download size={14} /></span></button>
+            )}
             <button onClick={handleRefresh} className="xui-btn xui-btn-text xui-font-sz-75 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center" style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)', padding: '6px 10px' }} disabled={loading} title="Refresh"><span className="icon-container"><Renew size={14} /></span></button>
             {canAdd && <button onClick={() => router.push('/dashboard/supporter/support-groups/add')} className="xui-btn xui-font-sz-75 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ backgroundColor: 'var(--primary-600)', color: 'var(--secondary-700)', whiteSpace: 'nowrap', padding: '6px 10px' }}><span className="icon-container"><Add size={14} /></span> Add</button>}
           </div>

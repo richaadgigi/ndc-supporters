@@ -1,7 +1,7 @@
 ﻿'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { Navbar } from '../../components/layout';
-import { Renew, Add, TrashCan, Download, OverflowMenuVertical } from '@carbon/icons-react';
+import { Renew, Add, TrashCan, Download, OverflowMenuVertical, UserRole } from '@carbon/icons-react';
 import { formatDate, extractErrorMessage } from '../../utils/formatters';
 import { useGeneral } from '../../context/GeneralContext';
 import { useRouter } from 'next/navigation';
@@ -9,7 +9,7 @@ import membersService from '../../services/members.service';
 import type { Member } from '../../services/members.service';
 import { Alert, showAlert, Pagination, EmptyState, ErrorState, FilterModal, SearchInput } from '../../components/common';
 import type { FilterField, FilterValues } from '../../components/common';
-import { ConfirmModal, ExportModal } from '../../components/modals';
+import { ConfirmModal, ExportModal, ChangeMemberRoleModal } from '../../components/modals';
 import { modalShow } from '@richaadgigi/stylexui';
 import { TableSkeleton } from '../../components/skeletons';
 
@@ -35,6 +35,9 @@ const AllMembers = () => {
   const accessResult = moduleId ? checkAccess(moduleId, subModuleId) : { hasAccess: false, accessTypes: [] };
   const canAdd = accessResult.accessTypes.includes('add');
   const canDelete = accessResult.accessTypes.includes('delete');
+  const canChangeRole = accessResult.accessTypes.includes('edit') && accessResult.accessTypes.includes('elevated_role');
+
+  const roleAccessIds = getAccessIds('supporter', 'member-roles');
 
   const handleResponse = (response: any) => {
     if (response.success && response.data) {
@@ -224,7 +227,7 @@ const AllMembers = () => {
                     <th>Role</th>
                     <th>Code</th>
                     <th>Joined</th>
-                    {canDelete && <th>Actions</th>}
+                    {(canDelete || canChangeRole) && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -242,12 +245,13 @@ const AllMembers = () => {
                       </td>
                       <td className="xui-font-sz-80 xui-opacity-6">{member.code || '-'}</td>
                       <td className="xui-opacity-7 xui-font-sz-80">{formatDate(member.createdAt)}</td>
-                      {canDelete && (
+                      {(canDelete || canChangeRole) && (
                         <td>
                           <div className="xui-tooltip" xui-set="left">
                             <span className="xui-cursor-pointer xui-d-inline-flex"><OverflowMenuVertical size={20} /></span>
                             <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex', maxWidth: '500px' }}>
-                              <button onClick={() => { setSelected(member); modalShow('delete-member-modal'); }} className="xui-btn xui-btn-small xui-d-flex xui-flex-ai-center xui-grid-gap-half xui-cursor-pointer xui-font-sz-80" style={{ backgroundColor: 'var(--error-light)', border: 'none', color: 'var(--error)' }}><TrashCan size={16} /> Remove</button>
+                              {canChangeRole && <button onClick={() => { setSelected(member); modalShow('change-member-role-modal'); }} className="xui-btn xui-btn-small xui-d-flex xui-flex-ai-center xui-grid-gap-half xui-cursor-pointer xui-font-sz-80" style={{ backgroundColor: 'var(--info-light)', border: 'none', color: 'var(--info)' }}><UserRole size={16} /> Change Role</button>}
+                              {canDelete && <button onClick={() => { setSelected(member); modalShow('delete-member-modal'); }} className="xui-btn xui-btn-small xui-d-flex xui-flex-ai-center xui-grid-gap-half xui-cursor-pointer xui-font-sz-80" style={{ backgroundColor: 'var(--error-light)', border: 'none', color: 'var(--error)' }}><TrashCan size={16} /> Remove</button>}
                             </div>
                           </div>
                         </td>
@@ -307,6 +311,15 @@ const AllMembers = () => {
         data={members}
         setSuccessMessage={setSuccessMessage}
         showAlert={showAlert}
+      />
+      <ChangeMemberRoleModal
+        accessIds={moduleId && subModuleId ? { module_unique_id: moduleId, sub_module_unique_id: subModuleId } : null}
+        roleAccessIds={roleAccessIds ? { module_unique_id: roleAccessIds.module_unique_id, sub_module_unique_id: roleAccessIds.sub_module_unique_id } : null}
+        member={selected}
+        memberName={selected?.User ? `${selected.User.firstname} ${selected.User.lastname}` : (selected?.code || 'This member')}
+        onSuccess={handleRefresh}
+        setError={setActionError}
+        setSuccessMessage={setSuccessMessage}
       />
     </div>
   );
